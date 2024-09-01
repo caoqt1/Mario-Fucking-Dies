@@ -1151,7 +1151,7 @@ static void render_collision_point(struct CollisionPoint *point) {
     Mat4 mtxf;
     Vec3f pos;
     vec3f_copy(pos, point->point);
-    vec3_mul_val(pos, WORLD_SCALE);
+    vec3_mul(pos, WORLD_SCALE); //vec3_mul_val
     mtxf_align_terrain_normal(mtxf, point->normal, pos, 0);
     mtxf_to_mtx(mtx, mtxf);
     gSPMatrix(gDisplayListHead++, mtx, (G_MTX_MODELVIEW | G_MTX_PUSH));
