@@ -562,13 +562,13 @@ void rigid_body_check_surf_collisions(struct RigidBody *body) {
     for (s32 cellZ = minCellZ; cellZ <= maxCellZ; cellZ++) {
         for (s32 cellX = minCellX; cellX <= maxCellX; cellX++) {
             for (u32 i = 0; i < 3; i++) {
-                struct SurfaceNode *node = gStaticSurfacePartition[cellZ][cellX][i].next;
+                struct SurfaceNode *node = gStaticSurfacePartition[cellZ][cellX][i] -> next;
                 while (node != NULL) {
                     body_vs_surface_collision(body, node->surface, col);
                     node = node->next;
                 }
 
-                node = gDynamicSurfacePartition[cellZ][cellX][i].next;
+                node = gDynamicSurfacePartition[cellZ][cellX][i] -> next;
                 while (node != NULL) {
                     if (node->surface->object->rigidBody == NULL) {
                         body_vs_surface_collision(body, node->surface, col);
@@ -914,7 +914,7 @@ void rigid_body_apply_displacement(struct RigidBody *body, Vec3f linear, Vec3f a
     struct Surface *floor;
     find_floor(body->transform[3][0]+linear[0],body->transform[3][1]+linear[1],body->transform[3][2]+linear[2],&floor);
     if (!floor) {
-        play_sound(SOUND_ACTION_BONK, body->obj->header.gfx.cameraToObject);
+        //play_sound(SOUND_ACTION_BONK, body->obj->header.gfx.cameraToObject);
         linear[0] = -linear[0];
         linear[1] = -linear[1];
         linear[2] = -linear[2];
