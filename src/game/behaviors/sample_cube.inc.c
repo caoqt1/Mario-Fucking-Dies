@@ -199,7 +199,7 @@ void bhv_sample_cube_init(void) {
         spawn_object_relative_with_scale(4, 0, 0, 0, ModelScale, o, MODEL_M_SHOULDER_L, bhvSampleSphere);
         body = allocate_rigid_body_from_object(o, &M_Body_Mesh, 3.f, M_Size, FALSE);
 
-        gMarioState->ragdoll = o;
+        //gMarioState->ragdoll = o;
     }
     else {
         if (obj_has_model(o, MODEL_M_THIGH_L)) {
@@ -266,25 +266,25 @@ void bhv_sample_cube_init(void) {
 
 void bhv_sample_cube_loop(void) {
     // main ragdoll processing code happens for the body (basically the main controller)
-    if (gMarioState.spawnedRagdoll == 0) {
-        deallocate_rigid_body(o->rigidBody);
+    if (gMarioState -> spawnedRagdoll == 0) {
+        deallocate_rigid_body(o -> rigidBody);
         obj_mark_for_deletion(o);
     } else {
         // quat constraints
-        if (o->rigidBody->parentBody) {
+        if ( o -> rigidBody -> parentBody) {
             if (!(obj_has_model(o, MODEL_M_ARM_L) || obj_has_model(o, MODEL_M_ARM_R) ||
                   obj_has_model(o, MODEL_M_HAND_L) || obj_has_model(o, MODEL_M_HAND_R))) {
-                constrain_quaternion(o->rigidBody->parentBody->angleQuat, o->rigidBody->angleQuat, M_PI / 1.3f);
+                constrain_quaternion(o -> rigidBody -> parentBody -> angleQuat, o -> rigidBody -> angleQuat, M_PI / 1.3f);
             }
         }
 
-        if (o->oBehParams2ndByte == 0) {
-            gMarioState->pos[0] = o->oPosX;
-            gMarioState->pos[1] = o->oPosY;
-            gMarioState->pos[2] = o->oPosZ;
+        if (o -> oBehParams2ndByte == 0) {
+            gMarioState -> pos[0] = o -> oPosX;
+            gMarioState -> pos[1] = o -> oPosY;
+            gMarioState -> pos[2] = o -> oPosZ;
 
             // gMarioState->action = ACT_WAITING_FOR_DIALOG;
-            gMarioObject->header.gfx.sharedChild = gLoadedGraphNodes[MODEL_NONE];
+            gMarioObject -> header.gfx.sharedChild = gLoadedGraphNodes[MODEL_NONE];
         }
     }
 }
