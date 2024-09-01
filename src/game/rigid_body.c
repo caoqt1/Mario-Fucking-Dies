@@ -558,24 +558,34 @@ void rigid_body_check_surf_collisions(struct RigidBody *body) {
     s32 minCellZ = GET_CELL_COORD(body->minCorner[2]);
     s32 maxCellX = GET_CELL_COORD(body->maxCorner[0]);
     s32 maxCellZ = GET_CELL_COORD(body->maxCorner[2]);
+    
+    if (minCellX < 0 || minCellZ < 0 || maxCellX >= MAX_CELL_X || maxCellZ >= MAX_CELL_Z) {
+        return;
+    }
+
     // Iterate over all triangles
     for (s32 cellZ = minCellZ; cellZ <= maxCellZ; cellZ++) {
         for (s32 cellX = minCellX; cellX <= maxCellX; cellX++) {
             for (u32 i = 0; i < 3; i++) {
-                struct SurfaceNode *node = gStaticSurfacePartition[cellZ][cellX][i] -> next;
-                while (node != NULL) {
-                    body_vs_surface_collision(body, node->surface, col);
-                    node = node->next;
-                }
-
-                node = gDynamicSurfacePartition[cellZ][cellX][i] -> next;
-                while (node != NULL) {
-                    if (node->surface->object->rigidBody == NULL) {
+                // Check if gStaticSurfacePartition is not NULL
+                if (gStaticSurfacePartition[cellZ][cellX][i] != NULL) {
+                    struct SurfaceNode *node = gStaticSurfacePartition[cellZ][cellX][i]->next;
+                    while (node != NULL) {
                         body_vs_surface_collision(body, node->surface, col);
+                        node = node->next;
                     }
-                    node = node->next;
                 }
 
+                // Check if gDynamicSurfacePartition is not NULL
+                if (gDynamicSurfacePartition[cellZ][cellX][i] != NULL) {
+                    struct SurfaceNode *node = gDynamicSurfacePartition[cellZ][cellX][i]->next;
+                    while (node != NULL) {
+                        if (node->surface->object->rigidBody == NULL) {
+                            body_vs_surface_collision(body, node->surface, col);
+                        }
+                        node = node->next;
+                    }
+                }
             }
         }
     }
@@ -599,6 +609,7 @@ void rigid_body_check_body_collisions(struct RigidBody *body1, struct RigidBody 
             vertices_vs_tri_face(sCurrentVertices, body1->mesh->numVertices, &sCurrentTris2[i], col);
         }
     }
+    
     // Body 1 verts and edges vs body 2 quads
     if (body2->mesh->numQuads > 0) {
         for (u32 i = 0; i < body2->mesh->numQuads; i++) {
