@@ -1,6 +1,11 @@
 #include "src/game/rigid_body.h"
 #include "actors/group0.h"
-#include "src/game/rigid_body.h"
+//#include "src/game/rigid_body.h"
+//#include "src/audio/external.h"
+//#include "src/game/game_init.h"
+//#include "src/game/area.h"
+//#include "src/game/hud.h"
+//#include "src/game/level_update.h"
 
 Vec3f Collider_Size = {37.0f, 20.0f, 25.0f};
 
@@ -8,7 +13,6 @@ Vec3f M_Size = {17.0f, 17.0f, 17.0f};
 
 Vec3f Tiny_Size = {17.0f, 17.0f, 17.0f};
 Vec3f Arm_Size = {11.0f, 11.0f, 11.0f};
-
 
 Vec3f M_Body_Verts[13] = {
 	{1.0f, 1.4f, 1.0f},
@@ -145,7 +149,7 @@ struct MeshInfo M_Head_Mesh = {
 };
 
 struct MeshInfo M_Limb_R_Mesh = {
-    M_Limb_R_Verts,
+    M_Limb_L_Verts,
     NULL,
     NULL,
     NULL,
@@ -156,7 +160,7 @@ struct MeshInfo M_Limb_R_Mesh = {
 };
 
 struct MeshInfo M_Limb_L_Mesh = {
-    M_Limb_L_Verts,
+    M_Limb_R_Verts,
     NULL,
     NULL,
     NULL,
@@ -181,6 +185,8 @@ void bhv_sample_cube_init(void) {
 
     struct RigidBody *body;
 
+    o->oBoosting = 0;
+
     if (o->oBehParams2ndByte == 90) {
         spawn_object_relative(0, 0, 0, 0, o, MODEL_M_BODY, bhvSampleSphere);
         body = allocate_rigid_body_from_object(o, &Collider_Mesh, 20.f, Collider_Size, FALSE);
@@ -193,6 +199,10 @@ void bhv_sample_cube_init(void) {
         spawn_object_relative(8, 0, 0, 0, o, MODEL_M_THIGH_R, bhvSampleSphere);
         spawn_object_relative(4, 0, 0, 0, o, MODEL_M_SHOULDER_L, bhvSampleSphere);
         body = allocate_rigid_body_from_object(o, &M_Body_Mesh, 3.f, M_Size, FALSE);
+
+        gMarioState->ragdoll = o;
+
+        
     }
     else {
 
@@ -236,11 +246,11 @@ void bhv_sample_cube_init(void) {
         else {
             body = allocate_rigid_body_from_object(o, &M_Limb_R_Mesh, 3.f, Arm_Size, FALSE);
         }
-
+        
         body->parentBody = o->parentObj->rigidBody;
     }
 
-
+    
 
     if (0 && (obj_has_model(o, MODEL_M_SHOULDER_L) || obj_has_model(o, MODEL_M_SHOULDER_R) || obj_has_model(o, MODEL_M_THIGH_L) || obj_has_model(o, MODEL_M_THIGH_R))) {
         body->maxYaw = 0x1000;
@@ -260,80 +270,63 @@ void bhv_sample_cube_init(void) {
         body->minPitch = -0x1000;
     }
 
+    gFalling = 0;
+
 }
 
 void bhv_sample_cube_loop(void) {
-
-    if (obj_has_model(o, MODEL_M_ARM_L)) {
-        Vec3f euler;
-        quat_to_euler(o->rigidBody->angleQuat, euler);
-        print_text_fmt_int(20, 100, "%d", (int) (o->rigidBody->angleQuat[0] * 100));
-        print_text_fmt_int(100, 100, "%d", (int) (o->rigidBody->angleQuat[1] * 100));
-        print_text_fmt_int(180, 100, "%d", (int) (o->rigidBody->angleQuat[2] * 100));
-
-        euler_to_quat(euler, o->rigidBody->angleQuat);
-
-        print_text_fmt_int(20, 70, "%d", (int) (o->rigidBody->angleQuat[0] * 100));
-        print_text_fmt_int(100, 70, "%d", (int) (o->rigidBody->angleQuat[1] * 100));
-        print_text_fmt_int(180, 70, "%d", (int) (o->rigidBody->angleQuat[2] * 100));
+    
+    //quat constraints
+    if (o->rigidBody->parentBody) {
+        if (!((obj_has_model(o, MODEL_M_ARM_L) || obj_has_model(o, MODEL_M_ARM_R) || obj_has_model(o, MODEL_M_HAND_L) || obj_has_model(o, MODEL_M_HAND_R)))) {
+            constrain_quaternion(o->rigidBody->parentBody->angleQuat, o->rigidBody->angleQuat, M_PI/1.3f);
+        }
     }
-
+    
+    //sleep deactivation
     if ((o->rigidBody->parentBody && o->rigidBody->parentBody->asleep == 0) || o->oTimer < 10) {
         o->rigidBody->asleep = 0;
     }
-
-    if (o->rigidBody->linearVel[1] > 20) {
-        o->rigidBody->linearVel[1] = 20;
+    if (gMarioState->controller->stickX != 0 || gMarioState->controller->stickY != 0) {
+        o->rigidBody->asleep = 0;
     }
 
+
+    //cowboy code solution to bounciness. The boosting var disables itself if mario's y vel is under 20 to reenable the cap.
+    if (o->rigidBody->linearVel[1] > 20) {
+        if (o->oBoosting == 0) {
+            o->rigidBody->linearVel[1] = 20;
+        }
+    }
     if (o->oBehParams2ndByte == 0) {
+    //SUUUUPER cowboy code solution to handle mario flying off corners
+    struct Surface *floor;
+    f32 fHeight = find_floor(o->rigidBody->centerOfMass[0], o->rigidBody->centerOfMass[1] + 100, o->rigidBody->centerOfMass[2], &floor);
+    f32 directionMag = sqrtf(sqr(o->rigidBody->linearVel[0] - o->oLastVelX) + sqr(o->rigidBody->linearVel[2] - o->oLastVelZ));
+    if (o->oBoosting == 0 && (directionMag > 3.0f) && o->rigidBody->linearVel[0] > 0.0f && o->rigidBody->centerOfMass[1] - fHeight > 300) {
+        //mario is PROBABLY flying off a corner at this point so destroy his velocity
+        o->rigidBody->linearVel[0] *= 0.8f;
+        o->rigidBody->linearVel[1] *= 0.4f;
+        o->rigidBody->linearVel[2] *= 0.8f;
+    }
+
+    o->oLastVelX = o->rigidBody->linearVel[0];
+    o->oLastVelY = o->rigidBody->linearVel[1];
+    o->oLastVelZ = o->rigidBody->linearVel[2];
+
+    if (o->oBoosting > 0) {
+        o->oBoosting--;
+    }
+
+
+    //set mario's position to the body position
+    
        gMarioState->pos[0] = o->oPosX;
        gMarioState->pos[1] = o->oPosY;
        gMarioState->pos[2] = o->oPosZ;
 
        gMarioState->action = ACT_WAITING_FOR_DIALOG;
        gMarioObject->header.gfx.sharedChild = gLoadedGraphNodes[MODEL_NONE];
-    }
-    if (o->oBehParams2ndByte > 1 && o->oBehParams2ndByte < 50) {
-        //o->rigidBody->centerOfMass[0] = o->parentObj->rigidBody->attachPoint[o->oBehParams2ndByte - 4][0];
-        //o->rigidBody->centerOfMass[1] = o->parentObj->rigidBody->attachPoint[o->oBehParams2ndByte - 4][1];
-        //o->rigidBody->centerOfMass[2] = o->parentObj->rigidBody->attachPoint[o->oBehParams2ndByte - 4][2];
-        struct RigidBody *con = o->rigidBody;
-
-        if (obj_has_model(o, MODEL_M_HAND_L)) {
-            //print_text_fmt_int(100, 100, "%d", (int) o->parentObj->rigidBody->attachPoint[o->oBehParams2ndByte - 4][0]);
-            //o->rigidBody->centerOfMass[0] += 30.0f;
-        }
-
-    //if (0) {
-        if (con->maxPitch && con->minPitch) {
-            if (con->angleQuat[0] < con->minPitch) {
-                con->angleQuat[0] = con->minPitch;
-            }
-            if (con->angleQuat[0] > con->maxPitch) {
-                con->angleQuat[0] = con->maxPitch;
-            }
-        }
-        if (con->maxYaw && con->minYaw) {
-            if (con->angleQuat[1] < con->minYaw) {
-                con->angleQuat[1] = con->minYaw;
-            }
-            if (con->angleQuat[1] > con->maxYaw) {
-                con->angleQuat[1] = con->maxYaw;
-            }
-        }
-        if (con->maxRoll && con->maxRoll) {
-            if (con->angleQuat[2] < con->minRoll) {
-                con->angleQuat[2] = con->minRoll;
-            }
-            if (con->angleQuat[2] > con->maxRoll) {
-                con->angleQuat[2] = con->maxRoll;
-            }
-
-            //con->angleQuat[3] = 0;
-        }
-    //}
-
     }
 
 }
