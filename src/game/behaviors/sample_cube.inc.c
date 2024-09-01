@@ -1,11 +1,6 @@
 #include "src/game/rigid_body.h"
 #include "actors/group0.h"
-//#include "src/game/rigid_body.h"
-//#include "src/audio/external.h"
-//#include "src/game/game_init.h"
-//#include "src/game/area.h"
-//#include "src/game/hud.h"
-//#include "src/game/level_update.h"
+#include "src/game/rigid_body.h"
 
 Vec3f Collider_Size = {37.0f, 20.0f, 25.0f};
 
@@ -198,11 +193,8 @@ void bhv_sample_cube_init(void) {
         body = allocate_rigid_body_from_object(o, &M_Body_Mesh, 3.f, M_Size, FALSE);
 
         //gMarioState->ragdoll = o;
-
-        
     }
     else {
-
         if (obj_has_model(o, MODEL_M_THIGH_L)) {
             spawn_object_relative(7, 0, 0, 0, o, MODEL_M_LEG_L, bhvSampleSphere);
         }
