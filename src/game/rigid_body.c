@@ -6,6 +6,8 @@
 #include "object_list_processor.h"
 #include "engine/surface_collision.h"
 #include "engine/surface_load.h"
+#include "src/game/level_update.h"
+#include "src/game/game_init.h"
 
 struct RigidBody gRigidBodies[MAX_RIGID_BODIES];
 
