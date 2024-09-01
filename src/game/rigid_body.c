@@ -549,7 +549,7 @@ f32 find_floor(f32 x, f32 y, f32 z, struct Surface **floor);
 
 /// Checks for collisions for the current rigid body.
 void rigid_body_check_surf_collisions(struct RigidBody *body) {
-    if (body->isStatic || body->asleep) {
+   /* if (body->isStatic || body->asleep) {
         return;
     }
 
@@ -578,7 +578,7 @@ void rigid_body_check_surf_collisions(struct RigidBody *body) {
 
             }
         }
-    }
+    }*/
 }
 
 void rigid_body_check_body_collisions(struct RigidBody *body1, struct RigidBody *body2) {
