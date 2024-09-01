@@ -8,7 +8,7 @@ Vec3f M_Size = {17.0f, 17.0f, 17.0f};
 Vec3f Tiny_Size = {17.0f, 17.0f, 17.0f};
 Vec3f Arm_Size = {11.0f, 11.0f, 11.0f};*/
 
-Vec3f Collider_Size = {22.2f, 12.0f, 15.0f};
+Vec3f Collider_Size = {13.32f, 7.2f, 9.0f};
 Vec3f M_Size = {10.2f, 10.2f, 10.2f};
 
 Vec3f Tiny_Size = {10.2f, 10.2f, 10.2f};
@@ -277,13 +277,13 @@ void bhv_sample_cube_loop(void) {
         }
 
         // sleep deactivation
-        if ((o->rigidBody->parentBody && o->rigidBody->parentBody->asleep == 0) || o->oTimer < 10) {
+        /*if ((o->rigidBody->parentBody && o->rigidBody->parentBody->asleep == 0) || o->oTimer < 10) {
             o->rigidBody->asleep = 0;
-        }
+        }*/
 
-        if (o->rigidBody->linearVel[1] > 20) {
+        /*if (o->rigidBody->linearVel[1] > 20) {
             o->rigidBody->linearVel[1] = 20;
-        }
+        }*/
 
         gMarioState->pos[0] = o->oPosX;
         gMarioState->pos[1] = o->oPosY;
@@ -292,7 +292,7 @@ void bhv_sample_cube_loop(void) {
         // gMarioState->action = ACT_WAITING_FOR_DIALOG;
         gMarioObject->header.gfx.sharedChild = gLoadedGraphNodes[MODEL_NONE];
     }
-    else if (gMarioState->spawnedRagdoll != 1) {
+    else if (gMarioState->spawnedRagdoll == 0) {
         deallocate_rigid_body(o->rigidBody);
         obj_mark_for_deletion(o);
     }
