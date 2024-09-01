@@ -914,7 +914,7 @@ void rigid_body_apply_displacement(struct RigidBody *body, Vec3f linear, Vec3f a
     struct Surface *floor;
     find_floor(body->transform[3][0]+linear[0],body->transform[3][1]+linear[1],body->transform[3][2]+linear[2],&floor);
     if (!floor) {
-        //play_sound(SOUND_ACTION_BONK, body->obj->header.gfx.cameraToObject);
+        play_sound(SOUND_ACTION_BONK, body->obj->header.gfx.cameraToObject);
         linear[0] = -linear[0];
         linear[1] = -linear[1];
         linear[2] = -linear[2];
