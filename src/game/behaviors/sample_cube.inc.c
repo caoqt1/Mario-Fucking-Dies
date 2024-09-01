@@ -8,7 +8,7 @@ Vec3f M_Size = {17.0f, 17.0f, 17.0f};
 Vec3f Tiny_Size = {17.0f, 17.0f, 17.0f};
 Vec3f Arm_Size = {11.0f, 11.0f, 11.0f};*/
 
-Vec3f Collider_Size = {13.32f, 7.2f, 9.0f};
+Vec3f Collider_Size = {22.2f, 12.0f, 15.0f};
 Vec3f M_Size = {10.2f, 10.2f, 10.2f};
 
 Vec3f Tiny_Size = {10.2f, 10.2f, 10.2f};
@@ -199,7 +199,7 @@ void bhv_sample_cube_init(void) {
         spawn_object_relative_with_scale(4, 0, 0, 0, ModelScale, o, MODEL_M_SHOULDER_L, bhvSampleSphere);
         body = allocate_rigid_body_from_object(o, &M_Body_Mesh, 3.f, M_Size, FALSE);
 
-        //gMarioState->ragdoll = o;
+        gMarioState->ragdoll = o;
     }
     else {
         if (obj_has_model(o, MODEL_M_THIGH_L)) {
@@ -266,8 +266,10 @@ void bhv_sample_cube_init(void) {
 
 void bhv_sample_cube_loop(void) {
     // main ragdoll processing code happens for the body (basically the main controller)
-    if (o->oBehParams2ndByte == 0) {
-
+    if (gMarioState.spawnedRagdoll == 0) {
+        deallocate_rigid_body(o->rigidBody);
+        obj_mark_for_deletion(o);
+    } else {
         // quat constraints
         if (o->rigidBody->parentBody) {
             if (!(obj_has_model(o, MODEL_M_ARM_L) || obj_has_model(o, MODEL_M_ARM_R) ||
@@ -276,24 +278,13 @@ void bhv_sample_cube_loop(void) {
             }
         }
 
-        // sleep deactivation
-        /*if ((o->rigidBody->parentBody && o->rigidBody->parentBody->asleep == 0) || o->oTimer < 10) {
-            o->rigidBody->asleep = 0;
-        }*/
+        if (o->oBehParams2ndByte == 0) {
+            gMarioState->pos[0] = o->oPosX;
+            gMarioState->pos[1] = o->oPosY;
+            gMarioState->pos[2] = o->oPosZ;
 
-        /*if (o->rigidBody->linearVel[1] > 20) {
-            o->rigidBody->linearVel[1] = 20;
-        }*/
-
-        gMarioState->pos[0] = o->oPosX;
-        gMarioState->pos[1] = o->oPosY;
-        gMarioState->pos[2] = o->oPosZ;
-
-        // gMarioState->action = ACT_WAITING_FOR_DIALOG;
-        gMarioObject->header.gfx.sharedChild = gLoadedGraphNodes[MODEL_NONE];
-    }
-    else if (gMarioState->spawnedRagdoll == 0) {
-        deallocate_rigid_body(o->rigidBody);
-        obj_mark_for_deletion(o);
+            // gMarioState->action = ACT_WAITING_FOR_DIALOG;
+            gMarioObject->header.gfx.sharedChild = gLoadedGraphNodes[MODEL_NONE];
+        }
     }
 }
