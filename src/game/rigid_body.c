@@ -190,6 +190,7 @@ struct Collision *init_collision(struct RigidBody *body1, struct RigidBody *body
     collision->body1 = body1;
     collision->body2 = body2;
     collision->numPoints = 0;
+    collision->isCeilOrWall = FALSE;
     return collision;
 }
 
@@ -293,35 +294,33 @@ u32 rigid_bodies_near(struct RigidBody *body1, struct RigidBody *body2) {
     return TRUE;
 }
 
-/// Find the point of intersection between a line and a plane. Returns FALSE if the line doesn't intersect.
-s32 edge_intersects_plane(Vec3f intersectionPoint, Vec3f edgePoint1, Vec3f edgePoint2, Vec3f planePoint, Vec3f planeNormal) {
-    Vec3f lineDir, relPlane;
-    // Find the point of intersection.
-    vec3f_diff(lineDir, edgePoint2, edgePoint1);
-    f32 dot = vec3f_dot(planeNormal, lineDir);
-    if (absf(dot) < 0.1f) return FALSE;
-    vec3f_diff(relPlane, planePoint, edgePoint1);
-    dot = vec3f_dot(planeNormal, relPlane) / dot;
-    if (dot < 0.f || dot > 1.f) return FALSE;
-    vec3f_scale(intersectionPoint, lineDir, dot);
-    vec3f_add(intersectionPoint, edgePoint1);
-    return TRUE;
-}
-
-
 /// Check if a mesh's vertices are intersecting a triangle's face.
 void vertices_vs_tri_face(Vec3f vertices[], u32 numVertices, struct TriangleInfo *tri, struct Collision *col) {
     //increment_debug_counter(&pNumVertexChecks, numVertices);
-
-
-
     for (u32 i = 0; i < numVertices; i++) {
         f32 distance = point_in_plane(vertices[i], tri->vertices[0], tri->normal);
         if (distance <= PENETRATION_MIN_DEPTH || distance >= PENETRATION_MAX_DEPTH) continue;
         if (point_is_in_tri(vertices[i], tri)) {
             add_collision(col, vertices[i], tri->normal, distance);
+            if (gGoalFanfare == 0) {
+                play_sound(SOUND_ACTION_BONK, body->obj->header.gfx.cameraToObject);
+            }
         }
     }
+}
+
+/// Check if a mesh's vertices are intersecting a triangle's face.
+void vertex_vs_tri_face(Vec3f vertex, struct TriangleInfo *tri, struct Collision *col) {
+    //increment_debug_counter(&pNumVertexChecks, numVertices);
+    
+    f32 distance = point_in_plane(vertex, tri->vertices[0], tri->normal);
+    if (distance <= PENETRATION_MIN_DEPTH || distance >= PENETRATION_MAX_DEPTH) {
+        return;
+    }
+    if (point_is_in_tri(vertex, tri)) {
+        add_collision(col, vertex, tri->normal, distance);
+    }
+    return;
 }
 
 void vertex_vs_tri_face(Vec3f vertex, struct TriangleInfo *tri, struct Collision *col) {
@@ -370,7 +369,6 @@ void ball_vs_edge(Vec3f center, f32 size, Vec3f edge1, Vec3f edge2, struct Colli
     ball_vs_corner(center, size, closestPoint, col);
 }
 
-
 /// Check if a mesh's vertices are intersecting a quad's face.
 void vertices_vs_quad_face(Vec3f vertices[], u32 numVertices, struct QuadInfo *quad, struct Collision *col) {
     increment_debug_counter(&pNumVertexChecks, numVertices);
@@ -386,7 +384,7 @@ void vertices_vs_quad_face(Vec3f vertices[], u32 numVertices, struct QuadInfo *q
 /// Check if a mesh's edges are intersecting an edge belonging to a face.
 void edges_vs_edge(Vec3f vertices[], MeshEdge edges[], u32 numEdges, Vec3f edgePoint1, Vec3f edgePoint2, Vec3f edgeNormal, struct Collision *col) {
     Vec3f temp, edge, closestPointOnEdge, planeNormal, intersectionPoint;
-
+    
     vec3f_diff(edge, edgePoint2, edgePoint1);
     vec3f_cross(planeNormal, edgeNormal, edge);
     vec3f_normalize(planeNormal);
@@ -450,7 +448,6 @@ void quads_vs_vertex(struct QuadInfo quads[], u32 numQuads, Vec3f point, Vec3f v
     }
 }
 
-
 // Buffer to store the locations of each vertex of the current rigid body in world space.
 static Vec3f sCurrentVertices[50];
 static Vec3f sCurrentVertices2[50];
@@ -489,7 +486,7 @@ void calculate_mesh(struct RigidBody *body, Vec3f vertices[], struct TriangleInf
             if (vertices[i][j] > body->maxCorner[j]) body->maxCorner[j] = vertices[i][j];
         }
 
-
+        
     }
 
     if (body->parentBody) {
@@ -505,7 +502,7 @@ void calculate_mesh(struct RigidBody *body, Vec3f vertices[], struct TriangleInf
         }
     }
 
-
+    
     Vec3f edge1, edge2;
     // Calculate tris
     for (u32 i = 0; i < body->mesh->numTris; i++) {
@@ -574,22 +571,13 @@ void body_vs_surface_collision(struct RigidBody *body, struct Surface *tri, stru
     } else {
         vertices_vs_tri_face(sCurrentVertices, mesh->numVertices, &triInfo, col);
     }
-
-
-    //ball_vs_edge(body->centerOfMass, 90.f, triInfo.vertices[0], triInfo.vertices[1], col);
-    //ball_vs_edge(body->centerOfMass, 90.f, triInfo.vertices[1], triInfo.vertices[2], col);
-    //ball_vs_edge(body->centerOfMass, 90.f, triInfo.vertices[2], triInfo.vertices[0], col);
-
-    //ball_vs_corner(body->centerOfMass, 90.f, triInfo.vertices[0], col);
-    //ball_vs_corner(body->centerOfMass, 90.f, triInfo.vertices[1], col);
-    //ball_vs_corner(body->centerOfMass, 90.f, triInfo.vertices[2], col);
-
+    
     if (col->numPoints - prevCollisions < 4) {
         for (u32 i = 0; i < 3; i++) {
             edges_vs_edge(sCurrentVertices, mesh->edges, mesh->numEdges, triInfo.vertices[i], triInfo.vertices[i == 2 ? 0 : i + 1], triInfo.normal, col);
         }
     }
-
+    
     if (mesh->numTris > 0) {
         for (u32 i = 0; i < 3; i++) {
             tris_vs_vertex(sCurrentTris, mesh->numTris, triInfo.vertices[i], triInfo.normal, col);
@@ -601,14 +589,13 @@ void body_vs_surface_collision(struct RigidBody *body, struct Surface *tri, stru
             quads_vs_vertex(sCurrentQuads, mesh->numQuads, triInfo.vertices[i], triInfo.normal, col);
         }
     }
-
 }
 
 f32 find_floor(f32 x, f32 y, f32 z, struct Surface **floor);
 
 /// Checks for collisions for the current rigid body.
 void rigid_body_check_surf_collisions(struct RigidBody *body) {
-   if (body->isStatic || body->asleep) {
+    if (body->isStatic || body->asleep) {
         return;
     }
 
@@ -617,7 +604,7 @@ void rigid_body_check_surf_collisions(struct RigidBody *body) {
     s32 minCellZ = GET_CELL_COORD(body->minCorner[2]);
     s32 maxCellX = GET_CELL_COORD(body->maxCorner[0]);
     s32 maxCellZ = GET_CELL_COORD(body->maxCorner[2]);
-
+    
     // Iterate over all triangles
     for (s32 cellZ = minCellZ; cellZ <= maxCellZ; cellZ++) {
         for (s32 cellX = minCellX; cellX <= maxCellX; cellX++) {
@@ -664,13 +651,12 @@ void rigid_body_check_body_collisions(struct RigidBody *body1, struct RigidBody 
             vertices_vs_tri_face(sCurrentVertices, body1->mesh->numVertices, &sCurrentTris2[i], col);
         }
     }
-    
     // Body 1 verts and edges vs body 2 quads
     if (body2->mesh->numQuads > 0) {
         for (u32 i = 0; i < body2->mesh->numQuads; i++) {
             // Check for vertex collisions
             vertices_vs_quad_face(sCurrentVertices, body1->mesh->numVertices, &sCurrentQuads2[i], col);
-
+        
             // Check for edge collisions
             for (u32 j = 0; j < 4; j++) {
                 edges_vs_edge(sCurrentVertices, body1->mesh->edges, body1->mesh->numEdges,
@@ -816,16 +802,16 @@ void rigid_body_collision_impulse(struct RigidBody *body1, Vec3f hitPoint, Vec3f
     if (body1->parentBody) {
         Vec3f diminishedLinear;
         vec3f_copy(diminishedLinear, body1Linear);
-        diminishedLinear[0] /= 5;
-        diminishedLinear[1] /= 5;
-        diminishedLinear[2] /= 5;
+        diminishedLinear[0] /= 9;
+        diminishedLinear[1] /= 9;
+        diminishedLinear[2] /= 9;
         vec3f_add(body1->parentBody->linearVel, diminishedLinear);
 
         Vec3f diminishedAngular;
         vec3f_copy(diminishedAngular, body1Angular);
-        diminishedAngular[0] /= 8;
-        diminishedAngular[1] /= 8;
-        diminishedAngular[2] /= 8;
+        diminishedAngular[0] /= 14;
+        diminishedAngular[1] /= 14;
+        diminishedAngular[2] /= 14;
         vec3f_add(body1->parentBody->angularVel, diminishedAngular);
     }
 }
@@ -960,7 +946,7 @@ void rigid_body_set_pitch(struct RigidBody *body, s16 pitch) {
 void rigid_body_add_force(struct RigidBody *body, Vec3f contactPoint, Vec3f force, u32 wake) {
     // Calculate force
     vec3f_add(body->netForce, force);
-
+    
     // Calculate torque
     // τ = r x F
     Vec3f torque, contactOffset;
@@ -987,14 +973,13 @@ void rigid_body_apply_displacement(struct RigidBody *body, Vec3f linear, Vec3f a
         vec3f_normalize(linear);
     }
 
-    if (body->parentBody && type == 0) {
+    if (body->parentBody && (type == 0)) {
         Vec3f multiplier = {0.86f, 0.86f, 0.96f};
         Vec3f angMultiplier = {0.86f, 0.86f, 0.96f};
         vec3f_mul(linear, multiplier);
         vec3f_mul(angular, angMultiplier);
     }
-    
-    if (body->parentBody && type == 1) {
+    if (body->parentBody && (type == 1)) {
         Vec3f multiplier = {0.82f, 0.82f, 0.82f};
         Vec3f angMultiplier = {0.92f, 0.92f, 0.92f};
         vec3f_mul(linear, multiplier);
@@ -1005,7 +990,7 @@ void rigid_body_apply_displacement(struct RigidBody *body, Vec3f linear, Vec3f a
     // Apply linear velocity
     // Δx = v * Δt
     vec3f_add_scaled(body->centerOfMass, linear, dt);
-
+    
     // Apply angular velocity
     // Δθ = ω * Δt
     Quat angleChange;
@@ -1052,7 +1037,7 @@ void rigid_body_update_position_from_collisions(struct RigidBody *body) {
     if (body->isStatic || body->asleep) {
         return;
     }
-
+    
     rigid_body_apply_displacement(body, body->linearDisplacement, body->angularDisplacement, 1);
 
     vec3f_set(body->linearDisplacement, 0.f, 0.f, 0.f);
@@ -1096,7 +1081,7 @@ void rigid_body_update_velocity(struct RigidBody *body) {
         rigid_body_apply_gravity(body);
     }
 
-
+    
 
     // Calculate linear velocity
     // Δv = (F / m) * Δt
@@ -1105,16 +1090,25 @@ void rigid_body_update_velocity(struct RigidBody *body) {
     // Calculate angular velocity
     // Δω = (τ / I) * Δt
     Vec3f angularAccel;
+    
     linear_mtxf_mul_vec3f(body->invInertia, angularAccel, body->netTorque);
+
+    if (obj_has_model(body->obj, MODEL_M_BODY)) {
+        angularAccel[0] *= 0.2f;
+        angularAccel[1] *= 0.2f;
+        angularAccel[2] *= 0.2f;
+    }
+
     vec3f_add_scaled(body->angularVel, angularAccel, dt);
 
     // Damping
     vec3f_scale(body->linearVel, body->linearVel, DAMPING);
     vec3f_scale(body->angularVel, body->angularVel, DAMPING);
 
-    if (body->parentBody) {
-        //vec3f_set(body->linearVel, 0.0f, 0.0f, 0.0f);
-        //vec3f_set(body->angularVel, 0.0f, 0.0f, 0.0f);
+    if (!body->parentBody) {
+        body->angularVel[0] = CLAMP(body->angularVel[0], -0.8f, 0.6f);
+        body->angularVel[1] = CLAMP(body->angularVel[1], -0.8f, 0.6f);
+        body->angularVel[2] = CLAMP(body->angularVel[2], -0.8f, 0.6f);
     }
 
     rigid_body_update_matrix(body);
@@ -1161,8 +1155,11 @@ void do_rigid_body_step(void) {
     // Update position
     for (u32 i = 0; i < MAX_RIGID_BODIES; i++) {
         if (gRigidBodies[i].allocated) {
+            struct RigidBody *body = &gRigidBodies[i];
+            if (!(body->obj && body->obj->oBehParams2ndByte > 1 && body->obj->oBehParams2ndByte < 50)) {
             rigid_body_update_position_from_collisions(&gRigidBodies[i]);
             rigid_body_update_obj(&gRigidBodies[i]);
+            }
         }
     }
 
@@ -1170,13 +1167,18 @@ void do_rigid_body_step(void) {
         if (gRigidBodies[i].allocated) {
             struct RigidBody *body = &gRigidBodies[i];
 
+            //calculate_mesh(body, sCurrentVertices, sCurrentTris, sCurrentQuads);
+            
             if (body->obj && body->obj->oBehParams2ndByte > 1 && body->obj->oBehParams2ndByte < 50) {
-                body->obj->rigidBody->centerOfMass[0] = body->obj->parentObj->rigidBody->attachPoint[body->obj->oBehParams2ndByte - 4][0];
-                body->obj->rigidBody->centerOfMass[1] = body->obj->parentObj->rigidBody->attachPoint[body->obj->oBehParams2ndByte - 4][1];
-                body->obj->rigidBody->centerOfMass[2] = body->obj->parentObj->rigidBody->attachPoint[body->obj->oBehParams2ndByte - 4][2];
-                }
-
-
+                body->centerOfMass[0] = body->obj->parentObj->rigidBody->attachPoint[body->obj->oBehParams2ndByte - 4][0];
+                body->centerOfMass[1] = body->obj->parentObj->rigidBody->attachPoint[body->obj->oBehParams2ndByte - 4][1];
+                body->centerOfMass[2] = body->obj->parentObj->rigidBody->attachPoint[body->obj->oBehParams2ndByte - 4][2];
+                body->transform[3][0] = body->obj->parentObj->rigidBody->attachPoint[body->obj->oBehParams2ndByte - 4][0];
+                body->transform[3][1] = body->obj->parentObj->rigidBody->attachPoint[body->obj->oBehParams2ndByte - 4][1];
+                body->transform[3][2] = body->obj->parentObj->rigidBody->attachPoint[body->obj->oBehParams2ndByte - 4][2];
+                calculate_mesh(body, sCurrentVertices, sCurrentTris, sCurrentQuads);
+                rigid_body_update_obj(&gRigidBodies[i]);
+           }
         }
     }
 }
