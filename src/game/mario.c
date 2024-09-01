@@ -1705,9 +1705,10 @@ void queue_rumble_particles(struct MarioState *m) {
 s32 execute_mario_action(UNUSED struct Object *obj) {
     s32 inLoop = TRUE;
 
-    if (gPlayer1Controller->buttonPressed & L_TRIG) {
+    if (gMarioState->health <= 0x100 && gMarioState -> spawnedRagdoll == 0) {
         struct Object *b = spawn_object_relative(0, 0, 300, 0, o, MODEL_M_BODY, bhvSampleSphere);
         b->parentObj = NULL;
+        gMarioState->spawnedRagdoll = 1;
     }
 
     // Updates once per frame:
