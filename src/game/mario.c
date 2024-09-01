@@ -1707,7 +1707,7 @@ s32 execute_mario_action(UNUSED struct Object *obj) {
 
     // KILL MARIO if you press da LEFT TRIGGER!!11
     if (gPlayer1Controller->buttonPressed & L_TRIG) {
-        gMarioState->health = 0x100
+        gMarioState->health = 0x100;
     }
     
     if (gMarioState->health <= 0x100 && gMarioState -> spawnedRagdoll == 0) {
