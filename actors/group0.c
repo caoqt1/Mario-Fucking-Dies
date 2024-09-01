@@ -30,3 +30,22 @@
 #include "src/s2d_engine/s2d_config.h"
 #include FONT_C_FILE
 #endif
+
+#include "physcube/model.inc.c"
+#include "physcube/collision.inc.c"
+#include "physsphere/model.inc.c"
+#include "physsphere/collision.inc.c"
+#include "m_body/model.inc.c"
+#include "m_head/model.inc.c"
+#include "m_shoulder_l/model.inc.c"
+#include "m_shoulder_r/model.inc.c"
+#include "m_arm_l/model.inc.c"
+#include "m_arm_r/model.inc.c"
+#include "m_hand_l/model.inc.c"
+#include "m_hand_r/model.inc.c"
+#include "m_thigh_l/model.inc.c"
+#include "m_thigh_r/model.inc.c"
+#include "m_leg_l/model.inc.c"
+#include "m_leg_r/model.inc.c"
+#include "m_foot_l/model.inc.c"
+#include "m_foot_r/model.inc.c"
