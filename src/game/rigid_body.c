@@ -296,17 +296,19 @@ u32 rigid_bodies_near(struct RigidBody *body1, struct RigidBody *body2) {
     return TRUE;
 }
 
-/// Check if a mesh's vertices are intersecting a triangle's face.
-void vertices_vs_tri_face(Vec3f vertices[], u32 numVertices, struct TriangleInfo *tri, struct Collision *col) {
-    //increment_debug_counter(&pNumVertexChecks, numVertices);
-    for (u32 i = 0; i < numVertices; i++) {
-        f32 distance = point_in_plane(vertices[i], tri->vertices[0], tri->normal);
-        if (distance <= PENETRATION_MIN_DEPTH || distance >= PENETRATION_MAX_DEPTH) continue;
-        if (point_is_in_tri(vertices[i], tri)) {
-            add_collision(col, vertices[i], tri->normal, distance);
-            play_sound(SOUND_ACTION_BONK, &gMarioState->pos);
-        }
-    }
+/// Find the point of intersection between a line and a plane. Returns FALSE if the line doesn't intersect.
+s32 edge_intersects_plane(Vec3f intersectionPoint, Vec3f edgePoint1, Vec3f edgePoint2, Vec3f planePoint, Vec3f planeNormal) {
+    Vec3f lineDir, relPlane;
+    // Find the point of intersection.
+    vec3f_diff(lineDir, edgePoint2, edgePoint1);
+    f32 dot = vec3f_dot(planeNormal, lineDir);
+    if (absf(dot) < 0.1f) return FALSE;
+    vec3f_diff(relPlane, planePoint, edgePoint1);
+    dot = vec3f_dot(planeNormal, relPlane) / dot;
+    if (dot < 0.f || dot > 1.f) return FALSE;
+    vec3f_scale(intersectionPoint, lineDir, dot);
+    vec3f_add(intersectionPoint, edgePoint1);
+    return TRUE;
 }
 
 /// Check if a mesh's vertices are intersecting a triangle's face.
