@@ -302,25 +302,12 @@ void vertices_vs_tri_face(Vec3f vertices[], u32 numVertices, struct TriangleInfo
         if (distance <= PENETRATION_MIN_DEPTH || distance >= PENETRATION_MAX_DEPTH) continue;
         if (point_is_in_tri(vertices[i], tri)) {
             add_collision(col, vertices[i], tri->normal, distance);
-            play_sound(SOUND_ACTION_BONK, body->obj->header.gfx.cameraToObject);
+            play_sound(SOUND_ACTION_BONK, &gMarioState->pos);
         }
     }
 }
 
 /// Check if a mesh's vertices are intersecting a triangle's face.
-void vertex_vs_tri_face(Vec3f vertex, struct TriangleInfo *tri, struct Collision *col) {
-    //increment_debug_counter(&pNumVertexChecks, numVertices);
-    
-    f32 distance = point_in_plane(vertex, tri->vertices[0], tri->normal);
-    if (distance <= PENETRATION_MIN_DEPTH || distance >= PENETRATION_MAX_DEPTH) {
-        return;
-    }
-    if (point_is_in_tri(vertex, tri)) {
-        add_collision(col, vertex, tri->normal, distance);
-    }
-    return;
-}
-
 void vertex_vs_tri_face(Vec3f vertex, struct TriangleInfo *tri, struct Collision *col) {
     //increment_debug_counter(&pNumVertexChecks, numVertices);
 
