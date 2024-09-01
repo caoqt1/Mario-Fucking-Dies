@@ -1,5 +1,6 @@
 #include "src/game/rigid_body.h"
 #include "actors/group0.h"
+#include "src/game/game_init.h"
 
 /*Vec3f Collider_Size = {37.0f, 20.0f, 25.0f};
 
@@ -227,7 +228,6 @@ void bhv_sample_cube_init(void) {
             spawn_object_relative_with_scale(7, 0, 0, 0, ModelScale, o, MODEL_M_HAND_R, bhvSampleSphere);
         }
 
-
         //allocation
         if (obj_has_model(o, MODEL_M_THIGH_L) || obj_has_model(o, MODEL_M_THIGH_R) || obj_has_model(o, MODEL_M_LEG_L) || obj_has_model(o, MODEL_M_LEG_R) || obj_has_model(o, MODEL_M_FOOT_L) || obj_has_model(o, MODEL_M_FOOT_R)) {
             body = allocate_rigid_body_from_object(o, &M_Leg_Mesh, 3.f, Tiny_Size, FALSE);
@@ -270,7 +270,14 @@ void bhv_sample_cube_loop(void) {
         deallocate_rigid_body(o -> rigidBody);
         obj_mark_for_deletion(o);
     } else {
-        // quat constraints
+
+	if (gMarioState -> spawnedRagdoll == 0) {
+        	deallocate_rigid_body(o->rigidBody);
+        	obj_mark_for_deletion(o);
+		return;
+	}
+	
+	// quat constraints
         if ( o -> rigidBody -> parentBody) {
             if (!(obj_has_model(o, MODEL_M_ARM_L) || obj_has_model(o, MODEL_M_ARM_R) ||
                   obj_has_model(o, MODEL_M_HAND_L) || obj_has_model(o, MODEL_M_HAND_R))) {
