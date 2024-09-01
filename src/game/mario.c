@@ -1715,7 +1715,7 @@ s32 execute_mario_action(UNUSED struct Object *obj) {
         b->parentObj = NULL;
         gMarioState->spawnedRagdoll = 1;
     }
-    else if (gMarioState->health >= 0x100 && gMarioState -> spawnedRagdoll != 0) {
+    else if (gMarioState->health >= 0x100 && gMarioState -> spawnedRagdoll == 1) {
         gMarioState->spawnedRagdoll = 0;
     }
 
