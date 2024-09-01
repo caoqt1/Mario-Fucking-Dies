@@ -489,8 +489,10 @@ void calculate_mesh(struct RigidBody *body, Vec3f vertices[], struct TriangleInf
         linear_mtxf_mul_vec3f_and_translate(body->transform, vertices[i], vertex);       
 
         for (u32 j = 0; j < 3; j++) {
-            if (vertices[i][j] < body->minCorner[j]) body->minCorner[j] = vertices[i][j];
-            if (vertices[i][j] > body->maxCorner[j]) body->maxCorner[j] = vertices[i][j];
+            if (vertices[i][j] < body->minCorner[j]) 
+		    body->minCorner[j] = vertices[i][j];
+            if (vertices[i][j] > body->maxCorner[j]) 
+		    body->maxCorner[j] = vertices[i][j];
         }
     }
 
@@ -500,9 +502,12 @@ void calculate_mesh(struct RigidBody *body, Vec3f vertices[], struct TriangleInf
         body->attachPoint[3][2] = vertices[7][2];
     } else {
         for (int i = 0; i < 5; i++) {
-            body->attachPoint[i][0] = vertices[i + 4][0];
-            body->attachPoint[i][1] = vertices[i + 4][1];
-            body->attachPoint[i][2] = vertices[i + 4][2];
+	    if (vertices[i + 4][0])
+           	 body->attachPoint[i][0] = vertices[i + 4][0];
+	    if (vertices[i + 4][1])
+           	 body->attachPoint[i][1] = vertices[i + 4][1];
+	    if (vertices[i + 4][2])
+            	body->attachPoint[i][2] = vertices[i + 4][2];
         }
     }
 
