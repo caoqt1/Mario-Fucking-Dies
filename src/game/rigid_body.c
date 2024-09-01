@@ -312,6 +312,17 @@ s32 edge_intersects_plane(Vec3f intersectionPoint, Vec3f edgePoint1, Vec3f edgeP
 }
 
 /// Check if a mesh's vertices are intersecting a triangle's face.
+void vertices_vs_tri_face(Vec3f vertices[], u32 numVertices, struct TriangleInfo *tri, struct Collision *col) {
+    for (u32 i = 0; i < numVertices; i++) {
+        f32 distance = point_in_plane(vertices[i], tri->vertices[0], tri->normal);
+        if (distance <= PENETRATION_MIN_DEPTH || distance >= PENETRATION_MAX_DEPTH) continue;
+        if (point_is_in_tri(vertices[i], tri)) {
+            add_collision(col, vertices[i], tri->normal, distance);
+        }
+    }
+}
+
+/// Check if a mesh's vertices are intersecting a triangle's face.
 void vertex_vs_tri_face(Vec3f vertex, struct TriangleInfo *tri, struct Collision *col) {
     //increment_debug_counter(&pNumVertexChecks, numVertices);
 
