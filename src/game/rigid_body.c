@@ -558,10 +558,6 @@ void rigid_body_check_surf_collisions(struct RigidBody *body) {
     s32 minCellZ = GET_CELL_COORD(body->minCorner[2]);
     s32 maxCellX = GET_CELL_COORD(body->maxCorner[0]);
     s32 maxCellZ = GET_CELL_COORD(body->maxCorner[2]);
-    
-    if (minCellX < 0 || minCellZ < 0 || maxCellX >= MAX_CELL_X || maxCellZ >= MAX_CELL_Z) {
-        return;
-    }
 
     // Iterate over all triangles
     for (s32 cellZ = minCellZ; cellZ <= maxCellZ; cellZ++) {
