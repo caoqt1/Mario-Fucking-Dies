@@ -9,6 +9,8 @@ Vec3f M_Size = {17.0f, 17.0f, 17.0f};
 Vec3f Tiny_Size = {17.0f, 17.0f, 17.0f};
 Vec3f Arm_Size = {11.0f, 11.0f, 11.0f};
 
+f32 ModelScale = 0.6;
+
 Vec3f M_Body_Verts[13] = {
 	{1.0f, 1.4f, 1.0f},
 	{1.0f, 1.4f, -1.0f},
@@ -180,45 +182,44 @@ void bhv_sample_cube_init(void) {
     struct RigidBody *body;
 
     if (o->oBehParams2ndByte == 90) {
-        spawn_object_relative(0, 0, 0, 0, o, MODEL_M_BODY, bhvSampleSphere);
+        spawn_object_relative_with_scale(0, 0, 0, 0, ModelScale, o, MODEL_M_BODY, bhvSampleSphere);
         body = allocate_rigid_body_from_object(o, &Collider_Mesh, 20.f, Collider_Size, FALSE);
         body->colOnly = 1;
     }
     else if (o->oBehParams2ndByte == 0) {
-        spawn_object_relative(5, 0, 0, 0, o, MODEL_M_SHOULDER_R, bhvSampleSphere);
-        spawn_object_relative(6, 0, 0, 0, o, MODEL_M_HEAD, bhvSampleSphere);
-        spawn_object_relative(7, 0, 0, 0, o, MODEL_M_THIGH_L, bhvSampleSphere);
-        spawn_object_relative(8, 0, 0, 0, o, MODEL_M_THIGH_R, bhvSampleSphere);
-        spawn_object_relative(4, 0, 0, 0, o, MODEL_M_SHOULDER_L, bhvSampleSphere);
+        spawn_object_relative_with_scale(5, 0, 0, 0, ModelScale, o, MODEL_M_SHOULDER_R, bhvSampleSphere);
+        spawn_object_relative_with_scale(6, 0, 0, 0, ModelScale, o, MODEL_M_HEAD, bhvSampleSphere);
+        spawn_object_relative_with_scale(7, 0, 0, 0, ModelScale, o, MODEL_M_THIGH_L, bhvSampleSphere);
+        spawn_object_relative_with_scale(8, 0, 0, 0, ModelScale, o, MODEL_M_THIGH_R, bhvSampleSphere);
+        spawn_object_relative_with_scale(4, 0, 0, 0, ModelScale, o, MODEL_M_SHOULDER_L, bhvSampleSphere);
         body = allocate_rigid_body_from_object(o, &M_Body_Mesh, 3.f, M_Size, FALSE);
 
         //gMarioState->ragdoll = o;
     }
     else {
         if (obj_has_model(o, MODEL_M_THIGH_L)) {
-            spawn_object_relative(7, 0, 0, 0, o, MODEL_M_LEG_L, bhvSampleSphere);
+            spawn_object_relative_with_scale(7, 0, 0, 0, ModelScale, o, MODEL_M_LEG_L, bhvSampleSphere);
         }
         if (obj_has_model(o, MODEL_M_THIGH_R)) {
-            spawn_object_relative(7, 0, 0, 0, o, MODEL_M_LEG_R, bhvSampleSphere);
+            spawn_object_relative_with_scale(7, 0, 0, 0, ModelScale, o, MODEL_M_LEG_R, bhvSampleSphere);
         }
         if (obj_has_model(o, MODEL_M_LEG_L)) {
-            spawn_object_relative(7, 0, 0, 0, o, MODEL_M_FOOT_L, bhvSampleSphere);
+            spawn_object_relative_with_scale(7, 0, 0, 0, ModelScale, o, MODEL_M_FOOT_L, bhvSampleSphere);
         }
         if (obj_has_model(o, MODEL_M_LEG_R)) {
-            spawn_object_relative(7, 0, 0, 0, o, MODEL_M_FOOT_R, bhvSampleSphere);
+            spawn_object_relative_with_scale(7, 0, 0, 0, ModelScale, o, MODEL_M_FOOT_R, bhvSampleSphere);
         }
-
         if (obj_has_model(o, MODEL_M_SHOULDER_L)) {
-            spawn_object_relative(7, 0, 0, 0, o, MODEL_M_ARM_L, bhvSampleSphere);
+            spawn_object_relative_with_scale(7, 0, 0, 0, ModelScale, o, MODEL_M_ARM_L, bhvSampleSphere);
         }
         if (obj_has_model(o, MODEL_M_SHOULDER_R)) {
-            spawn_object_relative(7, 0, 0, 0, o, MODEL_M_ARM_R, bhvSampleSphere);
+            spawn_object_relative_with_scale(7, 0, 0, 0, ModelScale, o, MODEL_M_ARM_R, bhvSampleSphere);
         }
         if (obj_has_model(o, MODEL_M_ARM_L)) {
-            spawn_object_relative(7, 0, 0, 0, o, MODEL_M_HAND_L, bhvSampleSphere);
+            spawn_object_relative_with_scale(7, 0, 0, 0, ModelScale, o, MODEL_M_HAND_L, bhvSampleSphere);
         }
         if (obj_has_model(o, MODEL_M_ARM_R)) {
-            spawn_object_relative(7, 0, 0, 0, o, MODEL_M_HAND_R, bhvSampleSphere);
+            spawn_object_relative_with_scale(7, 0, 0, 0, ModelScale, o, MODEL_M_HAND_R, bhvSampleSphere);
         }
 
 
@@ -281,7 +282,7 @@ void bhv_sample_cube_loop(void) {
        gMarioState->pos[1] = o->oPosY;
        gMarioState->pos[2] = o->oPosZ;
 
-       gMarioState->action = ACT_WAITING_FOR_DIALOG;
+       //gMarioState->action = ACT_WAITING_FOR_DIALOG;
        gMarioObject->header.gfx.sharedChild = gLoadedGraphNodes[MODEL_NONE];
     }
 
