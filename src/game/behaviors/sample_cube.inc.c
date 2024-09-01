@@ -265,30 +265,35 @@ void bhv_sample_cube_init(void) {
 }
 
 void bhv_sample_cube_loop(void) {
-    
-    //quat constraints
-    if (o->rigidBody->parentBody) {
-        if (!((obj_has_model(o, MODEL_M_ARM_L) || obj_has_model(o, MODEL_M_ARM_R) || obj_has_model(o, MODEL_M_HAND_L) || obj_has_model(o, MODEL_M_HAND_R)))) {
-            constrain_quaternion(o->rigidBody->parentBody->angleQuat, o->rigidBody->angleQuat, M_PI/1.3f);
-        }
-    }
-    
-    //sleep deactivation
-    if ((o->rigidBody->parentBody && o->rigidBody->parentBody->asleep == 0) || o->oTimer < 10) {
-        o->rigidBody->asleep = 0;
-    }
-    
-    if (o->rigidBody->linearVel[1] > 20) {
-        o->rigidBody->linearVel[1] = 20;
-    }
-
+    // main ragdoll processing code happens for the body (basically the main controller)
     if (o->oBehParams2ndByte == 0) {
-       gMarioState->pos[0] = o->oPosX;
-       gMarioState->pos[1] = o->oPosY;
-       gMarioState->pos[2] = o->oPosZ;
 
-       //gMarioState->action = ACT_WAITING_FOR_DIALOG;
-       gMarioObject->header.gfx.sharedChild = gLoadedGraphNodes[MODEL_NONE];
+        // quat constraints
+        if (o->rigidBody->parentBody) {
+            if (!(obj_has_model(o, MODEL_M_ARM_L) || obj_has_model(o, MODEL_M_ARM_R) ||
+                  obj_has_model(o, MODEL_M_HAND_L) || obj_has_model(o, MODEL_M_HAND_R))) {
+                constrain_quaternion(o->rigidBody->parentBody->angleQuat, o->rigidBody->angleQuat, M_PI / 1.3f);
+            }
+        }
+
+        // sleep deactivation
+        if ((o->rigidBody->parentBody && o->rigidBody->parentBody->asleep == 0) || o->oTimer < 10) {
+            o->rigidBody->asleep = 0;
+        }
+
+        if (o->rigidBody->linearVel[1] > 20) {
+            o->rigidBody->linearVel[1] = 20;
+        }
+
+        gMarioState->pos[0] = o->oPosX;
+        gMarioState->pos[1] = o->oPosY;
+        gMarioState->pos[2] = o->oPosZ;
+
+        // gMarioState->action = ACT_WAITING_FOR_DIALOG;
+        gMarioObject->header.gfx.sharedChild = gLoadedGraphNodes[MODEL_NONE];
     }
-
+    else if (gMarioState->spawnedRagdoll != 1) {
+        deallocate_rigid_body(o->rigidBody);
+        obj_mark_for_deletion(o);
+    }
 }
