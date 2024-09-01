@@ -54,43 +54,85 @@ void mtxf_from_quat(Quat q, Mat4 dest) {
     dest[3][3] = 1.f;
 }
 
-/*
-void quat_to_euler(Quat q, Vec3f dest) {
-    // roll (x-axis rotation)
-    double sinr_cosp = 2 * (q[3] * q[0] + q[1] * q[2]);
-    double cosr_cosp = 1 - 2 * (q[0] * q[0] + q[1] * q[1]);
-    dest[0] = atan2f(sinr_cosp, cosr_cosp);
-    double m22 = sqrtf(1 - 2 * (q[0] * q[0] + q[2] * q[2]));
-    double m21 = sqrtf(2 * (q[1] * q[2] - q[3] * q[0]));
-    dest[1] = atan2f(m21, m22);
-    // yaw (z-axis rotation)
-    double siny_cosp = 2 * (q[3] * q[2] + q[0] * q[1]);
-    double cosy_cosp = 1 - 2 * (q[1] * q[1] + q[2] * q[2]);
-    dest[2] = 2 * atan2f(siny_cosp, cosy_cosp) - M_PI / 2;
-}
-*/
 
-void quat_to_euler(Quat q, Vec3f dest) {
-    dest[0] = 2.0f * (q[1] * q[3] - q[0] * q[2]);
-    dest[2] = 2.0f * (q[2] * q[3] + q[0] * q[1]);
-    dest[1] = q[0] * q[0] - q[1] * q[1] - q[2] * q[2] + q[3] * q[3];
+
+/// Normalize a quaternion.
+void quat_normalize(Quat quat) {
+    f32 invMag = 1.f / sqrtf(quat[0] * quat[0] + quat[1] * quat[1] + quat[2] * quat[2] + quat[3] * quat[3]);
+    quat[0] *= invMag;
+    quat[1] *= invMag;
+    quat[2] *= invMag;
+    quat[3] *= invMag;
+}
+
+
+/// Arcsine function using atan2 as a base
+void asine(f32 *dest, f32 x) {
+    *dest = atan2f(x, sqrtf(absf(1.0f - x * x)));
+}
+
+void acosine(f32 *dest, f32 x) {
+    asine(dest, x);
+    *dest = (M_PI/2.0) - *dest;
+}
+
+void quat_to_euler(Quat quat, Vec3f dest) {
+    dest[0] = atan2f(2.f * (quat[3] * quat[0] + quat[1] * quat[2]), 1.f - 2.f * (quat[0] * quat[0] + quat[1] * quat[1]));
+
+    f32 j;
+    asine(&j, 2.f * (quat[3] * quat[1] - quat[2] * quat[0]));
+    dest[1] = j;
+    
+    dest[2] = atan2f(2.f * (quat[3] * quat[2] + quat[0] * quat[1]), 1.f - 2.f * (quat[1] * quat[1] + quat[2] * quat[2]));
+}
+
+void Quat_MulTo(Quat this, Quat a, Quat dst) {
+    f32 tmp[4];
+
+    tmp[0] = ((this[3] * a[0]) + (this[0] * a[3]) + (this[1] * a[2])) - (this[2] * a[1]);
+    tmp[1] = ((this[3] * a[1]) + (this[1] * a[3]) + (this[2] * a[0])) - (this[0] * a[2]);
+    tmp[2] = ((this[3] * a[2]) + (this[2] * a[3]) + (this[0] * a[1])) - (this[1] * a[0]);
+    tmp[3] = ((((this[3] * a[3]) - (this[0] * a[0])) - (this[1] * a[1])) - (this[2] * a[2]));
+
+    dst[0] = tmp[0];
+    dst[1] = tmp[1];
+    dst[2] = tmp[2];
+    dst[3] = tmp[3];
 }
 
 void euler_to_quat(Vec3f from, Quat q) {
+    Quat tmpQ;
 
-    double cos_x_2 = cosf(from[0] / 2.0);
-    double sin_x_2 = sinf(from[0] / 2.0);
-    double cos_y_2 = cosf(from[1] / 2.0);
-    double sin_y_2 = sinf(from[1] / 2.0);
-    double cos_z_2 = cosf(from[2] / 2.0);
-    double sin_z_2 = sinf(from[2] / 2.0);
+    Vec3f fromCopy;
 
-    q[3] = cos_z_2 * cos_y_2 * cos_x_2 + sin_z_2 * sin_y_2 * sin_x_2;
-    q[0] = cos_z_2 * cos_y_2 * sin_x_2 - sin_z_2 * sin_y_2 * cos_x_2;
-    q[1] = cos_z_2 * sin_y_2 * cos_x_2 + sin_z_2 * cos_y_2 * sin_x_2;
-    q[2] = sin_z_2 * cos_y_2 * cos_x_2 - cos_z_2 * sin_y_2 * sin_x_2;
+    fromCopy[0] = from[0] * 0x8000 / M_PI;
+    fromCopy[1] = from[1] * 0x8000 / M_PI;
+    fromCopy[2] = from[2] * 0x8000 / M_PI;
 
+    tmpQ[0] = 0.0f;
+    tmpQ[1] = 0.0f;
+    tmpQ[2] = sins(fromCopy[2]);
+    tmpQ[3] = coss(fromCopy[2]);
+    // this = tmpQ * this
+    Quat_MulTo(tmpQ, q, q);
+
+    tmpQ[0] = sins(fromCopy[0]);
+    tmpQ[1] = 0.0f;
+    tmpQ[2] = 0.0f;
+    tmpQ[3] = coss(fromCopy[0]);
+    // this = tmpQ * this
+    Quat_MulTo(tmpQ, q, q);
+    
+    tmpQ[0] = 0.0f;
+    tmpQ[1] = sins(fromCopy[1]);
+    tmpQ[2] = 0.0f;
+    tmpQ[3] = coss(fromCopy[1]);
+    // this = tmpQ * this
+    Quat_MulTo(tmpQ, q, q);
+    
+    
 }
+
 
 /// Copy a quaternion.
 void quat_copy(Quat dest, Quat src) {
@@ -108,13 +150,30 @@ void quat_mul(Quat dest, Quat a, Quat b) {
     dest[3] = a[3] * b[3] - a[0] * b[0] - a[1] * b[1] - a[2] * b[2];
 }
 
-/// Normalize a quaternion.
-void quat_normalize(Quat quat) {
-    f32 invMag = 1.f / sqrtf(quat[0] * quat[0] + quat[1] * quat[1] + quat[2] * quat[2] + quat[3] * quat[3]);
-    quat[0] *= invMag;
-    quat[1] *= invMag;
-    quat[2] *= invMag;
-    quat[3] *= invMag;
+void constrain_quaternion(Quat other, Quat source, f32 max_angle) {
+    // Normalize quaternions
+    quat_normalize(source);
+    quat_normalize(other);
+
+    // Calculate the angle between the quaternions
+    f32 a;
+    f32 value = absf(other[3]*other[3]+ other[0]*other[0] + other[1]*other[1] + other[2]*other[2]);
+    acosine(&a, value);
+    f32 angle = 2 * a;
+
+    // If the angle is greater than the maximum angle, interpolate to constrain it
+    if (angle > max_angle) {
+        f32 t = max_angle / angle;
+        Quat q2_constrained = {0, 0, 0, 1};
+        q2_constrained[3] = (1 - t) * other[3] + t * source[3];
+        q2_constrained[0] = (1 - t) * other[0] + t * source[0];
+        q2_constrained[1] = (1 - t) * other[1] + t * source[1];
+        q2_constrained[2] = (1 - t) * other[2] + t * source[2];
+        // Renormalize the constrained quaternion
+        quat_normalize(q2_constrained);
+
+        quat_copy(source, q2_constrained);
+    }
 }
 
 struct Collision gCollisions[100];
