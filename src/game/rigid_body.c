@@ -460,8 +460,11 @@ static struct QuadInfo sCurrentQuads2[50];
 
 /// Transform all the vertices of the current rigid body.
 void calculate_mesh(struct RigidBody *body, Vec3f vertices[], struct TriangleInfo tris[], struct QuadInfo quads[]) {
+    if (!body || !body->mesh) {
+        return;
+    }
 
-    //the ball has a 600 unit box of collision detection
+    // The ball has a 600 unit box of collision detection
     if (body->mesh->numVertices == 0) {
         body->minCorner[0] = body->transform[3][0] - 300.0f;
         body->minCorner[1] = body->transform[3][1] - 300.0f;
@@ -476,6 +479,10 @@ void calculate_mesh(struct RigidBody *body, Vec3f vertices[], struct TriangleInf
     vec3f_set(body->minCorner,  1000000.f,  1000000.f,  1000000.f);
     vec3f_set(body->maxCorner, -1000000.f, -1000000.f, -1000000.f);
     for (u32 i = 0; i < body->mesh->numVertices; i++) {
+        if (!body->mesh->vertices[i]) {
+            continue;
+        }
+        
         Vec3f vertex;
         vec3f_copy(vertex, body->mesh->vertices[i]);
         vec3f_mul(vertex, body->size);
@@ -485,16 +492,13 @@ void calculate_mesh(struct RigidBody *body, Vec3f vertices[], struct TriangleInf
             if (vertices[i][j] < body->minCorner[j]) body->minCorner[j] = vertices[i][j];
             if (vertices[i][j] > body->maxCorner[j]) body->maxCorner[j] = vertices[i][j];
         }
-
-        
     }
 
     if (body->parentBody) {
         body->attachPoint[3][0] = vertices[7][0];
-            body->attachPoint[3][1] = vertices[7][1];
-            body->attachPoint[3][2] = vertices[7][2];
-    }
-    else {
+        body->attachPoint[3][1] = vertices[7][1];
+        body->attachPoint[3][2] = vertices[7][2];
+    } else {
         for (int i = 0; i < 5; i++) {
             body->attachPoint[i][0] = vertices[i + 4][0];
             body->attachPoint[i][1] = vertices[i + 4][1];
@@ -502,10 +506,14 @@ void calculate_mesh(struct RigidBody *body, Vec3f vertices[], struct TriangleInf
         }
     }
 
-    
     Vec3f edge1, edge2;
+    
     // Calculate tris
     for (u32 i = 0; i < body->mesh->numTris; i++) {
+        if (!body->mesh->tris[i]) {
+            continue;
+        }
+
         vec3f_copy(tris[i].vertices[0], vertices[body->mesh->tris[i][0]]);
         vec3f_copy(tris[i].vertices[1], vertices[body->mesh->tris[i][1]]);
         vec3f_copy(tris[i].vertices[2], vertices[body->mesh->tris[i][2]]);
@@ -515,8 +523,13 @@ void calculate_mesh(struct RigidBody *body, Vec3f vertices[], struct TriangleInf
         vec3f_cross(tris[i].normal, edge1, edge2);
         vec3f_normalize(tris[i].normal);
     }
+
     // Calculate quads
     for (u32 i = 0; i < body->mesh->numQuads; i++) {
+        if (!body->mesh->quads[i]) {
+            continue;
+        }
+
         vec3f_copy(quads[i].vertices[0], vertices[body->mesh->quads[i][0]]);
         vec3f_copy(quads[i].vertices[1], vertices[body->mesh->quads[i][1]]);
         vec3f_copy(quads[i].vertices[2], vertices[body->mesh->quads[i][2]]);
@@ -527,7 +540,6 @@ void calculate_mesh(struct RigidBody *body, Vec3f vertices[], struct TriangleInf
         vec3f_cross(quads[i].normal, edge1, edge2);
         vec3f_normalize(quads[i].normal);
     }
-
 }
 
 /// Determine if a rigid body is near a triangle.
