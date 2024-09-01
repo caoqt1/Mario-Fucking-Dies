@@ -1835,6 +1835,8 @@ void init_mario(void) {
     gMarioState->riddenObj = NULL;
     gMarioState->usedObj = NULL;
 
+    gMarioState->spawnedRagdoll = 0;
+
     gMarioState->waterLevel = find_water_level(gMarioSpawnInfo->startPos[0], gMarioSpawnInfo->startPos[2]);
 
     gMarioState->area = gCurrentArea;
