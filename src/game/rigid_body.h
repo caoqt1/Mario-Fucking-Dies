@@ -138,5 +138,6 @@ void rigid_body_do_collision(u32 bodyIndex);
 
 extern void quat_to_euler(Quat q, Vec3f dest);
 extern void euler_to_quat(Vec3f from, Quat q);
+extern void constrain_quaternion(Quat other, Quat source, f32 max_angle);
 
 void do_rigid_body_step(void);
