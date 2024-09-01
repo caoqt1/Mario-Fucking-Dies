@@ -302,9 +302,7 @@ void vertices_vs_tri_face(Vec3f vertices[], u32 numVertices, struct TriangleInfo
         if (distance <= PENETRATION_MIN_DEPTH || distance >= PENETRATION_MAX_DEPTH) continue;
         if (point_is_in_tri(vertices[i], tri)) {
             add_collision(col, vertices[i], tri->normal, distance);
-            if (gGoalFanfare == 0) {
-                play_sound(SOUND_ACTION_BONK, body->obj->header.gfx.cameraToObject);
-            }
+            play_sound(SOUND_ACTION_BONK, body->obj->header.gfx.cameraToObject);
         }
     }
 }
