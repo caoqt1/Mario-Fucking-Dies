@@ -21,7 +21,7 @@
 #include "spawn_object.h"
 #include "puppyprint.h"
 #include "profiling.h"
-
+#include "src/game/rigid_body.h"
 
 /**
  * Flags controlling what debug info is displayed.
@@ -478,7 +478,7 @@ void spawn_objects_from_info(UNUSED s32 unused, struct SpawnInfo *spawnInfo) {
             object->oBehParams2ndByte = GET_BPARAM2(spawnInfo->behaviorArg);
 
             object->behavior = script;
-            object->unused1 = 0;
+            //object->unused1 = 0;
 
             // Record death/collection in the SpawnInfo
             object->respawnInfoType = RESPAWN_INFO_TYPE_NORMAL;
@@ -649,6 +649,10 @@ void update_objects(UNUSED s32 unused) {
 
     // Update spawners and objects with surfaces
     update_terrain_objects();
+
+    for (u32 i = 0; i < NUM_RIGID_BODY_STEPS; i++) {
+        do_rigid_body_step();
+    }
 
     // If Mario was touching a moving platform at the end of last frame, apply
     // displacement now
