@@ -247,8 +247,6 @@ void bhv_sample_cube_init(void) {
         body->parentBody = o->parentObj->rigidBody;
     }
 
-    
-
     if (0 && (obj_has_model(o, MODEL_M_SHOULDER_L) || obj_has_model(o, MODEL_M_SHOULDER_R) || obj_has_model(o, MODEL_M_THIGH_L) || obj_has_model(o, MODEL_M_THIGH_R))) {
         body->maxYaw = 0x1000;
         body->maxRoll = 0x1000;
@@ -266,9 +264,6 @@ void bhv_sample_cube_init(void) {
         body->minRoll = -0x500;
         body->minPitch = -0x1000;
     }
-
-    gFalling = 0;
-
 }
 
 void bhv_sample_cube_loop(void) {
@@ -284,34 +279,12 @@ void bhv_sample_cube_loop(void) {
     if ((o->rigidBody->parentBody && o->rigidBody->parentBody->asleep == 0) || o->oTimer < 10) {
         o->rigidBody->asleep = 0;
     }
-    if (gMarioState->controller->stickX != 0 || gMarioState->controller->stickY != 0) {
-        o->rigidBody->asleep = 0;
-    }
-
-
-    //cowboy code solution to bounciness. The boosting var disables itself if mario's y vel is under 20 to reenable the cap.
-    if (o->rigidBody->linearVel[1] > 20) {
-         o->rigidBody->linearVel[1] = 20;
-    }
-    if (o->oBehParams2ndByte == 0) {
-    //SUUUUPER cowboy code solution to handle mario flying off corners
-    struct Surface *floor;
-    f32 fHeight = find_floor(o->rigidBody->centerOfMass[0], o->rigidBody->centerOfMass[1] + 100, o->rigidBody->centerOfMass[2], &floor);
-    f32 directionMag = sqrtf(sqr(o->rigidBody->linearVel[0] - o->oLastVelX) + sqr(o->rigidBody->linearVel[2] - o->oLastVelZ));
-    if ((directionMag > 3.0f) && o->rigidBody->linearVel[0] > 0.0f && o->rigidBody->centerOfMass[1] - fHeight > 300) {
-        //mario is PROBABLY flying off a corner at this point so destroy his velocity
-        o->rigidBody->linearVel[0] *= 0.8f;
-        o->rigidBody->linearVel[1] *= 0.4f;
-        o->rigidBody->linearVel[2] *= 0.8f;
-    }
-
-    o->oLastVelX = o->rigidBody->linearVel[0];
-    o->oLastVelY = o->rigidBody->linearVel[1];
-    o->oLastVelZ = o->rigidBody->linearVel[2];
-
-
-    //set mario's position to the body position
     
+    if (o->rigidBody->linearVel[1] > 20) {
+        o->rigidBody->linearVel[1] = 20;
+    }
+
+    if (o->oBehParams2ndByte == 0) {
        gMarioState->pos[0] = o->oPosX;
        gMarioState->pos[1] = o->oPosY;
        gMarioState->pos[2] = o->oPosZ;
