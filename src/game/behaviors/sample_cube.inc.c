@@ -9,7 +9,7 @@ Vec3f M_Size = {17.0f, 17.0f, 17.0f};
 Vec3f Tiny_Size = {17.0f, 17.0f, 17.0f};
 Vec3f Arm_Size = {11.0f, 11.0f, 11.0f};
 
-f32 ModelScale = 0.6;
+f32 ModelScale = 0.7;
 
 Vec3f M_Body_Verts[13] = {
 	{1.0f, 1.4f, 1.0f},
