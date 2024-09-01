@@ -1705,8 +1705,13 @@ void queue_rumble_particles(struct MarioState *m) {
 s32 execute_mario_action(UNUSED struct Object *obj) {
     s32 inLoop = TRUE;
 
+    // KILL MARIO if you press da LEFT TRIGGER!!11
+    if (gPlayer1Controller->buttonPressed & L_TRIG) {
+        gMarioState->health = 0x100
+    }
+    
     if (gMarioState->health <= 0x100 && gMarioState -> spawnedRagdoll == 0) {
-        struct Object *b = spawn_object_relative_with_scale(0, 0, 10, 0, 0.6, o, MODEL_M_BODY, bhvSampleSphere);
+        struct Object *b = spawn_object_relative_with_scale(0, 0, 50, 0, 0.6, o, MODEL_M_BODY, bhvSampleSphere);
         b->parentObj = NULL;
         gMarioState->spawnedRagdoll = 1;
     }
