@@ -3030,7 +3030,9 @@ void update_camera(struct Camera *c) {
     }
 #endif
     // Start any Mario-related cutscenes
-    start_cutscene(c, get_cutscene_from_mario_status(c));
+    if (gMarioState -> spawnedRagdoll != 1) {
+        start_cutscene(c, get_cutscene_from_mario_status(c));
+    }
     gCollisionFlags &= ~COLLISION_FLAG_CAMERA;
 #ifdef PUPPYCAM
     if (!gPuppyCam.enabled || c->cutscene != 0 || gCurrentArea->camera->mode == CAMERA_MODE_INSIDE_CANNON) {
