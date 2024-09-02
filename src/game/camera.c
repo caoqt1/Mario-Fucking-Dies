@@ -3032,6 +3032,10 @@ void update_camera(struct Camera *c) {
     // Start any Mario-related cutscenes
     if (gMarioState -> spawnedRagdoll != 1) {
         start_cutscene(c, get_cutscene_from_mario_status(c));
+    } else {
+        if (gMarioState->action == ACT_DEATH_ON_STOMACH) {
+            start_cutscene(c, get_cutscene_from_mario_status(c));
+        }
     }
     gCollisionFlags &= ~COLLISION_FLAG_CAMERA;
 #ifdef PUPPYCAM
