@@ -16,7 +16,7 @@ Vec3f Tiny_Size = {10.2f, 10.2f, 10.2f};
 Vec3f Arm_Size = {6.6f, 6.6f, 6.6f};
 
 f32 ModelScale = 0.6;
-f32 DeathVelocityThreshold = 1;
+f32 DeathVelocityThreshold = 2;
 
 Vec3f M_Body_Verts[13] = {
 	{1.0f, 1.4f, 1.0f},
@@ -185,12 +185,12 @@ struct MeshInfo M_Leg_Mesh = {
     0
 };
 
-int is_death_action(u32 action) {
+/*int is_death_action(u32 action) {
     if (action == ACT_DEATH_ON_STOMACH || action == ACT_DEATH_ON_BACK || action == ACT_STANDING_DEATH || ACT_QUICKSAND_DEATH || ACT_WATER_DEATH || ACT_NO_STANDING_DEATH) {
         return TRUE;
     }
     return FALSE;
-}
+}*/
 
 void bhv_sample_cube_init(void) {
     struct RigidBody *body;
@@ -305,7 +305,7 @@ void bhv_sample_cube_loop(void) {
 	    if (o->rigidBody->linearVel[0] < DeathVelocityThreshold &&
    		o->rigidBody->linearVel[1] < DeathVelocityThreshold &&
     		o->rigidBody->linearVel[2] < DeathVelocityThreshold &&
-    		!is_death_action(gMarioState->action)) {
+    		gMarioState->action == ACT_WAITING_FOR_DIALOG) {
     			gMarioState->action = ACT_DEATH_EXIT;
 		    	print_text(20, 160, "RAGDOLL STATIONARY");
 		} else {
