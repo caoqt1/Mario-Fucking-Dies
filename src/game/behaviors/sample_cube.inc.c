@@ -16,7 +16,7 @@ Vec3f Tiny_Size = {10.2f, 10.2f, 10.2f};
 Vec3f Arm_Size = {6.6f, 6.6f, 6.6f};
 
 f32 ModelScale = 0.6;
-f32 DeathVelocityThreshold = 0.5;
+f32 DeathVelocityThreshold = 0.1;
 
 Vec3f M_Body_Verts[13] = {
 	{1.0f, 1.4f, 1.0f},
@@ -305,8 +305,8 @@ void bhv_sample_cube_loop(void) {
 	    if (o->rigidBody->linearVel[0] < DeathVelocityThreshold &&
    		o->rigidBody->linearVel[1] < DeathVelocityThreshold &&
     		o->rigidBody->linearVel[2] < DeathVelocityThreshold &&
-    		gMarioState->action == ACT_WAITING_FOR_DIALOG) {
-    			gMarioState->action = ACT_DEATH_EXIT;
+    		gMarioState->action != ACT_DEATH_ON_STOMACH) {
+    			gMarioState->action = ACT_DEATH_ON_STOMACH;
 		    	print_text(20, 160, "RAGDOLL STATIONARY");
 		} else {
     			gMarioState->action = ACT_WAITING_FOR_DIALOG;
