@@ -1713,6 +1713,11 @@ s32 execute_mario_action(UNUSED struct Object *obj) {
     if (gMarioState->health < 0x100 && gMarioState -> spawnedRagdoll == 0) {
         struct Object *b = spawn_object_relative_with_scale(0, 0, 50, 0, 0.6, o, MODEL_M_BODY, bhvSampleSphere);
         b->parentObj = NULL;
+        
+        b->rigidBody->linearVel[0] = gMarioState->vel[0]
+        b->rigidBody->linearVel[1] = gMarioState->vel[1]
+        b->rigidBody->linearVel[2] = gMarioState->vel[2]
+        
         gMarioState->spawnedRagdoll = 1;
     }
     else if (gMarioState->health >= 0x100 && gMarioState -> spawnedRagdoll == 1) {
