@@ -460,9 +460,11 @@ static struct QuadInfo sCurrentQuads2[50];
 
 /// Transform all the vertices of the current rigid body.
 void calculate_mesh(struct RigidBody *body, Vec3f vertices[], struct TriangleInfo tris[], struct QuadInfo quads[]) {
-    if (!body || !body->mesh) {
+    if (!body || !body->mesh || !body->minCorner || !body->maxCorner) {
         return;
     }
+
+    print_text(20, 160, "CALCULATING BALL STUFF");
 
     // The ball has a 600 unit box of collision detection
     if (body->mesh->numVertices == 0) {
@@ -474,6 +476,8 @@ void calculate_mesh(struct RigidBody *body, Vec3f vertices[], struct TriangleInf
         body->maxCorner[2] = body->transform[3][2] + 300.0f;
         return;
     }
+
+    print_text(20, 160, "CALCULATING VERTICES");
 
     // Calculate vertices
     vec3f_set(body->minCorner,  1000000.f,  1000000.f,  1000000.f);
@@ -496,6 +500,8 @@ void calculate_mesh(struct RigidBody *body, Vec3f vertices[], struct TriangleInf
         }
     }
 
+    print_text(20, 160, "PARENT BODY STUFF");
+
     if (body->parentBody) {
         body->attachPoint[3][0] = vertices[7][0];
         body->attachPoint[3][1] = vertices[7][1];
@@ -512,7 +518,9 @@ void calculate_mesh(struct RigidBody *body, Vec3f vertices[], struct TriangleInf
     }
 
     Vec3f edge1, edge2;
-    
+
+    print_text(20, 160, "CALCULATING TRIS");
+	
     // Calculate tris
     for (u32 i = 0; i < body->mesh->numTris; i++) {
         if (!body->mesh->tris[i]) {
@@ -528,6 +536,8 @@ void calculate_mesh(struct RigidBody *body, Vec3f vertices[], struct TriangleInf
         vec3f_cross(tris[i].normal, edge1, edge2);
         vec3f_normalize(tris[i].normal);
     }
+
+    print_text(20, 160, "CALCULATING QUADS");
 
     // Calculate quads
     for (u32 i = 0; i < body->mesh->numQuads; i++) {
