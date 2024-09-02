@@ -9,7 +9,8 @@ Vec3f M_Size = {17.0f, 17.0f, 17.0f};
 Vec3f Tiny_Size = {17.0f, 17.0f, 17.0f};
 Vec3f Arm_Size = {11.0f, 11.0f, 11.0f};*/
 
-Vec3f Collider_Size = {22.2f, 12.0f, 15.0f};
+//Vec3f Collider_Size = {22.2f, 12.0f, 15.0f};
+Vec3f Collider_Size = {1.0f, 1.0f, 1.0f};
 Vec3f M_Size = {10.2f, 10.2f, 10.2f};
 
 Vec3f Tiny_Size = {10.2f, 10.2f, 10.2f};
