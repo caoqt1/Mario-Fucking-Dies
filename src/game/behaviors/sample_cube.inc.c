@@ -270,6 +270,11 @@ void bhv_sample_cube_init(void) {
         body->minRoll = -0x500;
         body->minPitch = -0x1000;
     }
+
+    // Transfer velocity from mario to ragdoll on init.
+    o->rigidBody->linearVel[0] = gMarioState->vel[0];
+    o->rigidBody->linearVel[1] = gMarioState->vel[1];
+    o->rigidBody->linearVel[2] = gMarioState->vel[2];
 }
 
 void bhv_sample_cube_loop(void) {
