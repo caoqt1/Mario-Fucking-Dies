@@ -16,7 +16,7 @@ Vec3f Tiny_Size = {10.2f, 10.2f, 10.2f};
 Vec3f Arm_Size = {6.6f, 6.6f, 6.6f};
 
 f32 ModelScale = 0.6;
-f32 DeathVelocityThreshold = 2;
+f32 DeathVelocityThreshold = 0.5;
 
 Vec3f M_Body_Verts[13] = {
 	{1.0f, 1.4f, 1.0f},
