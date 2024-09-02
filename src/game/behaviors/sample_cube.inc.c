@@ -302,13 +302,14 @@ void bhv_sample_cube_loop(void) {
             gMarioState -> pos[1] = o -> oPosY;
             gMarioState -> pos[2] = o -> oPosZ;
 
-	    if (o->rigidBody->asleep != 0 &&
-    		gMarioState->action != ACT_DEATH_ON_STOMACH) {
-    			gMarioState->action = ACT_DEATH_ON_STOMACH;
-		    	print_text(20, 160, "RAGDOLL STATIONARY");
-		} else {
-    			gMarioState->action = ACT_WAITING_FOR_DIALOG;
-	    	}
+	    if (gMarioState->action != ACT_DEATH_ON_STOMACH) {
+   	    	if (o->rigidBody->asleep != 0) {
+            		gMarioState->action = ACT_DEATH_ON_STOMACH;
+        		print_text(20, 160, "RAGDOLL STATIONARY");
+    	    } else {
+       		 	gMarioState->action = ACT_WAITING_FOR_DIALOG;
+    		}
+	    }
             gMarioObject -> header.gfx.sharedChild = gLoadedGraphNodes[MODEL_NONE];
         }
     }
