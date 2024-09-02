@@ -306,7 +306,8 @@ void bhv_sample_cube_loop(void) {
    		o->rigidBody->linearVel[1] < DeathVelocityThreshold &&
     		o->rigidBody->linearVel[2] < DeathVelocityThreshold &&
     		!is_death_action(gMarioState->action)) {
-    			gMarioState->action = ACT_DEATH_ON_STOMACH;
+    			gMarioState->action = ACT_DEATH_EXIT;
+		    	print_text(20, 160, "RAGDOLL STATIONARY")
 		} else {
     			gMarioState->action = ACT_WAITING_FOR_DIALOG;
 	    	}
