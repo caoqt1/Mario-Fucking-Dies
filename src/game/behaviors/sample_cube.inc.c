@@ -302,9 +302,7 @@ void bhv_sample_cube_loop(void) {
             gMarioState -> pos[1] = o -> oPosY;
             gMarioState -> pos[2] = o -> oPosZ;
 
-	    if (o->rigidBody->linearVel[0] < DeathVelocityThreshold &&
-   		o->rigidBody->linearVel[1] < DeathVelocityThreshold &&
-    		o->rigidBody->linearVel[2] < DeathVelocityThreshold &&
+	    if (o->rigidBody->asleep != 0 &&
     		gMarioState->action != ACT_DEATH_ON_STOMACH) {
     			gMarioState->action = ACT_DEATH_ON_STOMACH;
 		    	print_text(20, 160, "RAGDOLL STATIONARY");
