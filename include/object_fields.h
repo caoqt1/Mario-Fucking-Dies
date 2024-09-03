@@ -1255,6 +1255,10 @@
 #define /*0x0FC*/ oYoshiChosenHome OBJECT_FIELD_S32(0x1D)
 #define /*0x100*/ oYoshiTargetYaw  OBJECT_FIELD_S32(0x1E)
 
+/* Ragdoll */
+#define /*0x0F4*/ oLastVelX OBJECT_FIELD_F32(0x1C)
+#define /*0x0F4*/ oLastVelY OBJECT_FIELD_F32(0x1D)
+#define /*0x0F4*/ oLastVelZ OBJECT_FIELD_F32(0x1E)
 
 /*Custom general defines:
 
