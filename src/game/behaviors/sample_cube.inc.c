@@ -279,44 +279,55 @@ void bhv_sample_cube_init(void) {
 }
 
 void bhv_sample_cube_loop(void) {
-    // main ragdoll processing code happens for the body (basically the main controller)
-    if (gMarioState -> spawnedRagdoll == 0) {
-        deallocate_rigid_body(o -> rigidBody);
+    if (gMarioState->spawnedRagdoll != 1) {
+        deallocate_rigid_body(o->rigidBody);
         obj_mark_for_deletion(o);
-    } else {
+        gMarioObject->header.gfx.sharedChild = gLoadedGraphNodes[MODEL_MARIO]; // hack to fix Mario becoming invisible until warp or init
+        return;
+    }
 
-	if (gMarioState -> spawnedRagdoll == 0) {
-        	deallocate_rigid_body(o->rigidBody);
-        	obj_mark_for_deletion(o);
-		return;
-	}
-	
-	// quat constraints
-        if ( o -> rigidBody -> parentBody) {
-            if (!(obj_has_model(o, MODEL_M_ARM_L) || obj_has_model(o, MODEL_M_ARM_R) ||
-                  obj_has_model(o, MODEL_M_HAND_L) || obj_has_model(o, MODEL_M_HAND_R))) {
-                constrain_quaternion(o -> rigidBody -> parentBody -> angleQuat, o -> rigidBody -> angleQuat, M_PI / 1.3f);
+    // Quaternion constraints
+    if (o->rigidBody->parentBody) {
+        if (!(obj_has_model(o, MODEL_M_ARM_L) || obj_has_model(o, MODEL_M_ARM_R) ||
+              obj_has_model(o, MODEL_M_HAND_L) || obj_has_model(o, MODEL_M_HAND_R))) {
+            constrain_quaternion(o->rigidBody->parentBody->angleQuat, o->rigidBody->angleQuat, M_PI / 1.3f);
+        }
+    }
+
+    if (o->rigidBody->linearVel[1] > 20) {
+        o->rigidBody->linearVel[1] = 20;
+    }
+
+    if (o->oBehParams2ndByte == 0) {
+        struct Surface *floor;
+        f32 fHeight = find_floor(o->rigidBody->centerOfMass[0], o->rigidBody->centerOfMass[1] + 100, o->rigidBody->centerOfMass[2], &floor);
+        f32 directionMag = sqrtf(sqr(o->rigidBody->linearVel[0] - o->oLastVelX) + sqr(o->rigidBody->linearVel[2] - o->oLastVelZ));
+
+        if ((directionMag > 3.0f) && o->rigidBody->linearVel[0] > 0.0f && o->rigidBody->centerOfMass[1] - fHeight > 300) {
+            // Mario is PROBABLY flying off a corner at this point so destroy his velocity
+            o->rigidBody->linearVel[0] *= 0.8f;
+            o->rigidBody->linearVel[1] *= 0.4f;
+            o->rigidBody->linearVel[2] *= 0.8f;
+        }
+
+        o->oLastVelX = o->rigidBody->linearVel[0];
+        o->oLastVelY = o->rigidBody->linearVel[1];
+        o->oLastVelZ = o->rigidBody->linearVel[2];
+
+	// Set mario's position to the ragdoll's position
+        gMarioState->pos[0] = o->oPosX;
+        gMarioState->pos[1] = o->oPosY + 3.0f;
+        gMarioState->pos[2] = o->oPosZ;
+
+        if (gMarioState->action != ACT_DEATH_ON_STOMACH) {
+            if (o->rigidBody->asleep != 0) {
+                gMarioState->action = ACT_DEATH_ON_STOMACH;
+                print_text(20, 160, "RAGDOLL STATIONARY");
+            } else {
+                gMarioState->action = ACT_WAITING_FOR_DIALOG;
             }
         }
 
-	if (o->rigidBody->linearVel[1] > 20) {
-        	o->rigidBody->linearVel[1] = 20;
-   	}
-
-        if (o -> oBehParams2ndByte == 0) {
-            gMarioState -> pos[0] = o -> oPosX;
-            gMarioState -> pos[1] = o -> oPosY;
-            gMarioState -> pos[2] = o -> oPosZ;
-
-	    if (gMarioState->action != ACT_DEATH_ON_STOMACH) {
-   	    	if (o->rigidBody->asleep != 0) {
-            		gMarioState->action = ACT_DEATH_ON_STOMACH;
-        		print_text(20, 160, "RAGDOLL STATIONARY");
-    	    } else {
-       		 	gMarioState->action = ACT_WAITING_FOR_DIALOG;
-    		}
-	    }
-            gMarioObject -> header.gfx.sharedChild = gLoadedGraphNodes[MODEL_NONE];
-        }
+        gMarioObject->header.gfx.sharedChild = gLoadedGraphNodes[MODEL_NONE];
     }
 }
