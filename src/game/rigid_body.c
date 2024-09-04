@@ -579,7 +579,7 @@ void body_vs_surface_collision(struct RigidBody *body, struct Surface *tri, stru
         pos[0] = body->transform[3][0] - (tri->normal.x * 90.0f);
         pos[1] = body->transform[3][1] - (tri->normal.y * 90.0f);
         pos[2] = body->transform[3][2] - (tri->normal.z * 90.0f);
-        vertex_vs_tri_face(&pos, &triInfo, col);
+        vertex_vs_tri_face(*pos, &triInfo, col);
     } else {
         vertices_vs_tri_face(sCurrentVertices, mesh->numVertices, &triInfo, col);
     }
