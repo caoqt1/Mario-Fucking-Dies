@@ -632,7 +632,7 @@ void rigid_body_check_surf_collisions(struct RigidBody *body) {
 		}
 
 		if (gDynamicSurfacePartition[cellZ][cellX][i] != NULL) {
-                	node = gDynamicSurfacePartition[cellZ][cellX][i]->next;
+                	struct SurfaceNode *node = gDynamicSurfacePartition[cellZ][cellX][i]->next;
                 	while (node != NULL) {
                     		if (node->surface->object->rigidBody == NULL) {
                         		body_vs_surface_collision(body, node->surface, col);
