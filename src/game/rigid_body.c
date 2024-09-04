@@ -466,7 +466,7 @@ static struct QuadInfo sCurrentQuads2[50];
 void calculate_mesh(struct RigidBody *body, Vec3f vertices[], struct TriangleInfo tris[], struct QuadInfo quads[]) {
 
     //the ball has a 600 unit box of collision detection
-    /*if (body->mesh->numVertices == 0) {
+    if (body->mesh->numVertices == 0) {
         body->minCorner[0] = body->transform[3][0] - 300.0f;
         body->minCorner[1] = body->transform[3][1] - 300.0f;
         body->minCorner[2] = body->transform[3][2] - 300.0f;
@@ -474,12 +474,16 @@ void calculate_mesh(struct RigidBody *body, Vec3f vertices[], struct TriangleInf
         body->maxCorner[1] = body->transform[3][1] + 300.0f;
         body->maxCorner[2] = body->transform[3][2] + 300.0f;
         return;
-    }*/
+    }
 
     // Calculate vertices
     vec3f_set(body->minCorner,  1000000.f,  1000000.f,  1000000.f);
     vec3f_set(body->maxCorner, -1000000.f, -1000000.f, -1000000.f);
     for (u32 i = 0; i < body->mesh->numVertices; i++) {
+	if (body->mesh->vertices[i] == NULL) {
+		return;
+	}
+	
         Vec3f vertex;
         vec3f_copy(vertex, body->mesh->vertices[i]);
         vec3f_mul(vertex, body->size);
