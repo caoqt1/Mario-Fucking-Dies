@@ -1705,13 +1705,13 @@ void queue_rumble_particles(struct MarioState *m) {
 s32 execute_mario_action(UNUSED struct Object *obj) {
     s32 inLoop = TRUE;
 
-    // KILL MARIO if you press da LEFT TRIGGER!!11
+    // Kill mario if you press the left trigger (debug thing for right now)
     if (gPlayer1Controller->buttonPressed & L_TRIG) {
         gMarioState->health = 0xFF;
     }
     
     if (gMarioState->health < 0x100 && gMarioState -> spawnedRagdoll == 0) {
-        struct Object *b = spawn_object_relative_with_scale(0, 0, 50, 0, 0.6, o, MODEL_M_BODY, bhvSampleSphere);
+        struct Object *b = spawn_object_relative_with_scale(0, 0, 300, 0, 0.6, o, MODEL_M_BODY, bhvSampleSphere);
         b->parentObj = NULL;
         
         gMarioState->spawnedRagdoll = 1;
@@ -1843,8 +1843,6 @@ void init_mario(void) {
     gMarioState->riddenObj = NULL;
     gMarioState->usedObj = NULL;
 
-    gMarioState->spawnedRagdoll = 0;
-
     gMarioState->waterLevel = find_water_level(gMarioSpawnInfo->startPos[0], gMarioSpawnInfo->startPos[2]);
 
     gMarioState->area = gCurrentArea;
@@ -1876,6 +1874,8 @@ void init_mario(void) {
 
     vec3f_copy(gMarioState->marioObj->header.gfx.pos, gMarioState->pos);
     vec3s_set(gMarioState->marioObj->header.gfx.angle, 0, gMarioState->faceAngle[1], 0);
+
+    gMarioState->spawnedRagdoll = 0;
 
     Vec3s capPos;
     if (save_file_get_cap_pos(capPos)) {
