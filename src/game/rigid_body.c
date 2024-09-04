@@ -178,6 +178,7 @@ void constrain_quaternion(Quat other, Quat source, f32 max_angle) {
     }
 }
 
+
 struct Collision gCollisions[100];
 u32 gNumCollisions = 0;
 
@@ -311,8 +312,10 @@ s32 edge_intersects_plane(Vec3f intersectionPoint, Vec3f edgePoint1, Vec3f edgeP
     return TRUE;
 }
 
+
 /// Check if a mesh's vertices are intersecting a triangle's face.
 void vertices_vs_tri_face(Vec3f vertices[], u32 numVertices, struct TriangleInfo *tri, struct Collision *col) {
+    //increment_debug_counter(&pNumVertexChecks, numVertices);
     for (u32 i = 0; i < numVertices; i++) {
         f32 distance = point_in_plane(vertices[i], tri->vertices[0], tri->normal);
         if (distance <= PENETRATION_MIN_DEPTH || distance >= PENETRATION_MAX_DEPTH) continue;
@@ -322,10 +325,9 @@ void vertices_vs_tri_face(Vec3f vertices[], u32 numVertices, struct TriangleInfo
     }
 }
 
-/// Check if a mesh's vertices are intersecting a triangle's face.
 void vertex_vs_tri_face(Vec3f vertex, struct TriangleInfo *tri, struct Collision *col) {
     //increment_debug_counter(&pNumVertexChecks, numVertices);
-
+    
     f32 distance = point_in_plane(vertex, tri->vertices[0], tri->normal);
     if (distance <= PENETRATION_MIN_DEPTH || distance >= PENETRATION_MAX_DEPTH) {
         return;
@@ -368,6 +370,7 @@ void ball_vs_edge(Vec3f center, f32 size, Vec3f edge1, Vec3f edge2, struct Colli
 
     ball_vs_corner(center, size, closestPoint, col);
 }
+
 
 /// Check if a mesh's vertices are intersecting a quad's face.
 void vertices_vs_quad_face(Vec3f vertices[], u32 numVertices, struct QuadInfo *quad, struct Collision *col) {
@@ -448,6 +451,7 @@ void quads_vs_vertex(struct QuadInfo quads[], u32 numQuads, Vec3f point, Vec3f v
     }
 }
 
+
 // Buffer to store the locations of each vertex of the current rigid body in world space.
 static Vec3f sCurrentVertices[50];
 static Vec3f sCurrentVertices2[50];
@@ -485,6 +489,8 @@ void calculate_mesh(struct RigidBody *body, Vec3f vertices[], struct TriangleInf
             if (vertices[i][j] < body->minCorner[j]) body->minCorner[j] = vertices[i][j];
             if (vertices[i][j] > body->maxCorner[j]) body->maxCorner[j] = vertices[i][j];
         }
+
+        
     }
 
     if (body->parentBody) {
@@ -569,7 +575,16 @@ void body_vs_surface_collision(struct RigidBody *body, struct Surface *tri, stru
     } else {
         vertices_vs_tri_face(sCurrentVertices, mesh->numVertices, &triInfo, col);
     }
-    
+
+
+    //ball_vs_edge(body->centerOfMass, 90.f, triInfo.vertices[0], triInfo.vertices[1], col);
+    //ball_vs_edge(body->centerOfMass, 90.f, triInfo.vertices[1], triInfo.vertices[2], col);
+    //ball_vs_edge(body->centerOfMass, 90.f, triInfo.vertices[2], triInfo.vertices[0], col);
+
+    //ball_vs_corner(body->centerOfMass, 90.f, triInfo.vertices[0], col);
+    //ball_vs_corner(body->centerOfMass, 90.f, triInfo.vertices[1], col);
+    //ball_vs_corner(body->centerOfMass, 90.f, triInfo.vertices[2], col);
+
     if (col->numPoints - prevCollisions < 4) {
         for (u32 i = 0; i < 3; i++) {
             edges_vs_edge(sCurrentVertices, mesh->edges, mesh->numEdges, triInfo.vertices[i], triInfo.vertices[i == 2 ? 0 : i + 1], triInfo.normal, col);
@@ -587,6 +602,7 @@ void body_vs_surface_collision(struct RigidBody *body, struct Surface *tri, stru
             quads_vs_vertex(sCurrentQuads, mesh->numQuads, triInfo.vertices[i], triInfo.normal, col);
         }
     }
+
 }
 
 f32 find_floor(f32 x, f32 y, f32 z, struct Surface **floor);
@@ -602,30 +618,24 @@ void rigid_body_check_surf_collisions(struct RigidBody *body) {
     s32 minCellZ = GET_CELL_COORD(body->minCorner[2]);
     s32 maxCellX = GET_CELL_COORD(body->maxCorner[0]);
     s32 maxCellZ = GET_CELL_COORD(body->maxCorner[2]);
-    
     // Iterate over all triangles
     for (s32 cellZ = minCellZ; cellZ <= maxCellZ; cellZ++) {
         for (s32 cellX = minCellX; cellX <= maxCellX; cellX++) {
             for (u32 i = 0; i < 3; i++) {
-                // Check if gStaticSurfacePartition is not NULL
-                if (gStaticSurfacePartition[cellZ][cellX][i] != NULL) {
-                    struct SurfaceNode *node = gStaticSurfacePartition[cellZ][cellX][i]->next;
-                    while (node != NULL) {
-                        body_vs_surface_collision(body, node->surface, col);
-                        node = node->next;
-                    }
+                struct SurfaceNode *node = gStaticSurfacePartition[cellZ][cellX][i].next;
+                while (node != NULL) {
+                    body_vs_surface_collision(body, node->surface, col);
+                    node = node->next;
                 }
 
-                // Check if gDynamicSurfacePartition is not NULL
-                if (gDynamicSurfacePartition[cellZ][cellX][i] != NULL) {
-                    struct SurfaceNode *node = gDynamicSurfacePartition[cellZ][cellX][i]->next;
-                    while (node != NULL) {
-                        if (node->surface->object->rigidBody == NULL) {
-                            body_vs_surface_collision(body, node->surface, col);
-                        }
-                        node = node->next;
+                node = gDynamicSurfacePartition[cellZ][cellX][i].next;
+                while (node != NULL) {
+                    if (node->surface->object->rigidBody == NULL) {
+                        body_vs_surface_collision(body, node->surface, col);
                     }
+                    node = node->next;
                 }
+
             }
         }
     }
@@ -1176,7 +1186,7 @@ void do_rigid_body_step(void) {
                 body->transform[3][2] = body->obj->parentObj->rigidBody->attachPoint[body->obj->oBehParams2ndByte - 4][2];
                 calculate_mesh(body, sCurrentVertices, sCurrentTris, sCurrentQuads);
                 rigid_body_update_obj(&gRigidBodies[i]);
-           }
+            }
         }
     }
 }
