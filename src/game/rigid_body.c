@@ -490,7 +490,7 @@ void calculate_mesh(struct RigidBody *body, Vec3f vertices[], struct TriangleInf
         linear_mtxf_mul_vec3f_and_translate(body->transform, vertices[i], vertex);       
 
         for (u32 j = 0; j < 3; j++) {
-	    if (vertices[i][j] != NULL) {
+	    if !(vertices[i][j] == NULL) {
             	if (vertices[i][j] < body->minCorner[j]) 
 			body->minCorner[j] = vertices[i][j];
             	if (vertices[i][j] > body->maxCorner[j]) 
