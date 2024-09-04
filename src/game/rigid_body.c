@@ -493,7 +493,7 @@ void calculate_mesh(struct RigidBody *body, Vec3f vertices[], struct TriangleInf
         
     }
 
-    if (body->parentBody) {
+    /*if (body->parentBody) {
         body->attachPoint[3][0] = vertices[7][0];
             body->attachPoint[3][1] = vertices[7][1];
             body->attachPoint[3][2] = vertices[7][2];
@@ -504,7 +504,7 @@ void calculate_mesh(struct RigidBody *body, Vec3f vertices[], struct TriangleInf
             body->attachPoint[i][1] = vertices[i + 4][1];
             body->attachPoint[i][2] = vertices[i + 4][2];
         }
-    }
+    }*/
 
     
     Vec3f edge1, edge2;
