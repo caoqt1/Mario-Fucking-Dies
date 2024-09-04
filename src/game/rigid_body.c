@@ -509,7 +509,7 @@ void calculate_mesh(struct RigidBody *body, Vec3f vertices[], struct TriangleInf
     
     Vec3f edge1, edge2;
     // Calculate tris
-    for (u32 i = 0; i < body->mesh->numTris; i++) {
+    /*for (u32 i = 0; i < body->mesh->numTris; i++) {
         vec3f_copy(tris[i].vertices[0], vertices[body->mesh->tris[i][0]]);
         vec3f_copy(tris[i].vertices[1], vertices[body->mesh->tris[i][1]]);
         vec3f_copy(tris[i].vertices[2], vertices[body->mesh->tris[i][2]]);
@@ -520,7 +520,7 @@ void calculate_mesh(struct RigidBody *body, Vec3f vertices[], struct TriangleInf
         vec3f_normalize(tris[i].normal);
     }
     // Calculate quads
-    /*for (u32 i = 0; i < body->mesh->numQuads; i++) {
+    for (u32 i = 0; i < body->mesh->numQuads; i++) {
         vec3f_copy(quads[i].vertices[0], vertices[body->mesh->quads[i][0]]);
         vec3f_copy(quads[i].vertices[1], vertices[body->mesh->quads[i][1]]);
         vec3f_copy(quads[i].vertices[2], vertices[body->mesh->quads[i][2]]);
