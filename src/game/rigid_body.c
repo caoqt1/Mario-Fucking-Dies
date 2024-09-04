@@ -618,12 +618,15 @@ void rigid_body_check_surf_collisions(struct RigidBody *body) {
     s32 minCellZ = GET_CELL_COORD(body->minCorner[2]);
     s32 maxCellX = GET_CELL_COORD(body->maxCorner[0]);
     s32 maxCellZ = GET_CELL_COORD(body->maxCorner[2]);
+
+    // Ensure valid partition boundaries
+    if (minCellX < 0 || minCellZ < 0 || maxCellX >= MAX_CELL_X || maxCellZ >= MAX_CELL_Z) {
+    	return;
+    }
+    
     // Iterate over all triangles
     for (s32 cellZ = minCellZ; cellZ <= maxCellZ; cellZ++) {
         for (s32 cellX = minCellX; cellX <= maxCellX; cellX++) {
-	    if (cellX < 0 || cellX >= MAX_CELLS_X || cellZ < 0 || cellZ >= MAX_CELLS_Z) {
-            	continue;
-            }
             for (u32 i = 0; i < 3; i++) {
                 struct SurfaceNode *node = gStaticSurfacePartition[cellZ][cellX][i]->next;
                 while (node != NULL) {
@@ -633,7 +636,7 @@ void rigid_body_check_surf_collisions(struct RigidBody *body) {
 
                 node = gDynamicSurfacePartition[cellZ][cellX][i]->next;
                 while (node != NULL) {
-                    if (node->surface && node->surface->object && node->surface->object->rigidBody == NULL) {
+                    if (node->surface->object->rigidBody == NULL) {
                         body_vs_surface_collision(body, node->surface, col);
                     }
                     node = node->next;
