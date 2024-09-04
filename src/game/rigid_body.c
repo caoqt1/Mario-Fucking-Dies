@@ -512,9 +512,9 @@ void calculate_mesh(struct RigidBody *body, Vec3f vertices[], struct TriangleInf
             body->attachPoint[i][2] = vertices[i + 4][2];
         }
     }
-
     
     Vec3f edge1, edge2;
+    
     // Calculate tris
     for (u32 i = 0; i < body->mesh->numTris; i++) {
         vec3f_copy(tris[i].vertices[0], vertices[body->mesh->tris[i][0]]);
@@ -579,7 +579,7 @@ void body_vs_surface_collision(struct RigidBody *body, struct Surface *tri, stru
         pos[0] = body->transform[3][0] - (tri->normal.x * 90.0f);
         pos[1] = body->transform[3][1] - (tri->normal.y * 90.0f);
         pos[2] = body->transform[3][2] - (tri->normal.z * 90.0f);
-        vertex_vs_tri_face(f32 pos, &triInfo, col);
+        vertex_vs_tri_face(&pos, &triInfo, col);
     } else {
         vertices_vs_tri_face(sCurrentVertices, mesh->numVertices, &triInfo, col);
     }
